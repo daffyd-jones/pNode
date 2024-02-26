@@ -97,41 +97,41 @@ def draw_tcp(slf, hdr, depth):
     dst_surface = slf.tings["font2"].render("Ack Number:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80))
     time_surface = slf.tings["font2"].render("Data Offset:", True, BLACK)
-    slf.screen.blit(time_surface, (tile.x + 230, tile.y + 35))
+    slf.screen.blit(time_surface, (tile.x + 240, tile.y + 35))
     length_surface = slf.tings["font2"].render("Reserved:", True, BLACK)
-    slf.screen.blit(length_surface, (tile.x + 230, tile.y + 50))
+    slf.screen.blit(length_surface, (tile.x + 240, tile.y + 50))
     src_surface = slf.tings["font2"].render("Flags:", True, BLACK)
-    slf.screen.blit(src_surface, (tile.x + 230, tile.y + 65))
+    slf.screen.blit(src_surface, (tile.x + 240, tile.y + 65))
     dst_surface = slf.tings["font2"].render("Window:", True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 80))
+    slf.screen.blit(dst_surface, (tile.x + 240, tile.y + 80))
     dst_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 95))
+    slf.screen.blit(dst_surface, (tile.x + 240, tile.y + 95))
     dst_surface = slf.tings["font2"].render("Urgent Ponter:", True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 110))
+    slf.screen.blit(dst_surface, (tile.x + 240, tile.y + 110))
     dst_surface = slf.tings["font2"].render("Options:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 95))
     #
     #
     time_surface = slf.tings["font2"].render(hdr["src_port"], True, BLACK)
-    slf.screen.blit(time_surface, (tile.x + 120, tile.y + 35))
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
     length_surface = slf.tings["font2"].render(hdr["dst_port"], True, BLACK)
-    slf.screen.blit(length_surface, (tile.x + 120, tile.y + 50))
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
     src_surface = slf.tings["font2"].render(hdr["seq"], True, BLACK)
-    slf.screen.blit(src_surface, (tile.x + 120, tile.y + 65))
+    slf.screen.blit(src_surface, (tile.x + 130, tile.y + 65))
     dst_surface = slf.tings["font2"].render(hdr["ack"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 80))
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 80))
     time_surface = slf.tings["font2"].render(hdr["data_off"], True, BLACK)
-    slf.screen.blit(time_surface, (tile.x + 330, tile.y + 35))
+    slf.screen.blit(time_surface, (tile.x + 340, tile.y + 35))
     length_surface = slf.tings["font2"].render(hdr["res"], True, BLACK)
-    slf.screen.blit(length_surface, (tile.x + 330, tile.y + 50))
+    slf.screen.blit(length_surface, (tile.x + 340, tile.y + 50))
     src_surface = slf.tings["font2"].render(hdr["flags"], True, BLACK)
-    slf.screen.blit(src_surface, (tile.x + 330, tile.y + 65))
+    slf.screen.blit(src_surface, (tile.x + 340, tile.y + 65))
     dst_surface = slf.tings["font2"].render(hdr["window"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 330, tile.y + 80))
+    slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 80))
     dst_surface = slf.tings["font2"].render(hdr["checksum"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 330, tile.y + 95))
+    slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 95))
     dst_surface = slf.tings["font2"].render(hdr["urg_point"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 330, tile.y + 110))
+    slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 110))
     b = 0
     for a in hdr["options"]:
         # print(a)
@@ -162,13 +162,13 @@ def draw_udp(slf, hdr, depth):
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80))
     #
     dst_surface = slf.tings["font2"].render(hdr["src_port"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 35))
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 35))
     dst_surface = slf.tings["font2"].render(hdr["dst_port"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 50))
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 50))
     dst_surface = slf.tings["font2"].render(hdr["len"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 65))
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 65))
     dst_surface = slf.tings["font2"].render(hdr["checksum"], True, BLACK)
-    slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 80))
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 80))
     return depth
     pass
 
@@ -191,21 +191,21 @@ def draw_dns(slf, hdr, depth):
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80))
     dst_surface = slf.tings["font2"].render("Add rrs:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 95))
-    dst_surface = slf.tings["font2"].render("qr", True, BLACK)
+    dst_surface = slf.tings["font2"].render("qr:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110))
-    dst_surface = slf.tings["font2"].render("Opcode", True, BLACK)
+    dst_surface = slf.tings["font2"].render("Opcode:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 125))
-    dst_surface = slf.tings["font2"].render("aa", True, BLACK)
+    dst_surface = slf.tings["font2"].render("aa:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 35))
-    dst_surface = slf.tings["font2"].render("tc", True, BLACK)
+    dst_surface = slf.tings["font2"].render("tc:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 50))
-    dst_surface = slf.tings["font2"].render("rd", True, BLACK)
+    dst_surface = slf.tings["font2"].render("rd:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 65))
-    dst_surface = slf.tings["font2"].render("ra", True, BLACK)
+    dst_surface = slf.tings["font2"].render("ra:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 80))
-    dst_surface = slf.tings["font2"].render("z", True, BLACK)
+    dst_surface = slf.tings["font2"].render("z:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 95))
-    dst_surface = slf.tings["font2"].render("rcode", True, BLACK)
+    dst_surface = slf.tings["font2"].render("rcode:", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 230, tile.y + 110))
     #
     dst_surface = slf.tings["font2"].render(hdr["tran_id"], True, BLACK)
@@ -285,13 +285,12 @@ def draw_igmp(slf, hdr, depth):
     #
     dst_surface = slf.tings["font2"].render("- IGMP -", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 5))
-    #
-    if hdr["type"] == "x22":
-        pass
-    else:
+
+    if hdr['ver'] == '0':
+
         dst_surface = slf.tings["font2"].render("Type:", True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 35))
-        dst_surface = slf.tings["font2"].render("Trans:", True, BLACK)
+        dst_surface = slf.tings["font2"].render("mrcode:", True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 50))
         dst_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 65))
@@ -304,8 +303,44 @@ def draw_igmp(slf, hdr, depth):
         slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 50))
         dst_surface = slf.tings["font2"].render(hdr["check"], True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 65))
-        dst_surface = slf.tings["font2"].render(hdr["addr"], True, BLACK)
+        dst_surface = slf.tings["font2"].render(hdr["group"], True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 80))
+    if hdr['ver'] == '1':
+
+        dst_surface = slf.tings["font2"].render("Type:", True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 35))
+        dst_surface = slf.tings["font2"].render("mrcode:", True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 50))
+        dst_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 65))
+        #
+        dst_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 35))
+        dst_surface = slf.tings["font2"].render(hdr["mrcode"], True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 50))
+        dst_surface = slf.tings["font2"].render(hdr["check"], True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 65))
+    #
+    # if hdr["type"] == "x22":
+    #     pass
+    # else:
+    #     dst_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 35))
+    #     dst_surface = slf.tings["font2"].render("Trans:", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 50))
+    #     dst_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 65))
+    #     dst_surface = slf.tings["font2"].render("Group Address:", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80))
+    #     #
+    #     dst_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 35))
+    #     dst_surface = slf.tings["font2"].render(hdr["mrt"], True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 50))
+    #     dst_surface = slf.tings["font2"].render(hdr["check"], True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 65))
+    #     dst_surface = slf.tings["font2"].render(hdr["addr"], True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 80))
     return depth
 
 def draw_arp(slf, hdr, depth):
@@ -366,7 +401,7 @@ def draw_raw(slf, hdr, depth):
     str_len = 46
     h_chk = 150
     h_num = len(rstr) // (lchnk * str_len)
-    pchnk = (26 * 46)
+    pchnk = (26 * 48)
     h_chk = 150
     temp = min(150 + (h_chk * h_num), 450)
     #
@@ -399,30 +434,31 @@ def draw_raw(slf, hdr, depth):
         slf.screen.blit(dst_surface, (slf.info_elem["info_raw_fwd_button"].x + 10, slf.info_elem["info_raw_fwd_button"].y + 2))
         st = rstr[slf.indices["info_page"] * pchnk:(slf.indices["info_page"] * pchnk) + pchnk]
         if not slf.ascii_hex:
-            l = []
-            r = []
-            bf = False
-            # print(st)
-            for i in range(0, len(st), 24):
-                bf = not bf
-                if bf:
-                    l.append(st[i: i + 24])
-                else:
-                    r.append(st[i: i + 24])
-                pass
+            # l = []
+            # r = []
+            # bf = False
+            # # print(st)
+            # for i in range(0, len(st), 24):
+            #     bf = not bf
+            #     if bf:
+            #         l.append(st[i: i + 24])
+            #     else:
+            #         r.append(st[i: i + 24])
+            #     pass
+            st = ''.join([st[i:i+24] + ('    ' if (i // 24) % 2 == 0 else '')
+                        for i in range(0, len(st), 24)])
             buf = 0
-            for i in range(0, len(l)):
-                dst_surface = slf.tings["font2"].render(l[i], True, BLACK)
+            for i in range(0, len(st), 52):
+                dst_surface = slf.tings["font2"].render(st[i: i + 52], True, BLACK)
                 slf.screen.blit(dst_surface, (tile.x + 5, tile.y + str_len + buf))
                 buf += 15
-            buf = 0
-            for i in range(0, len(r)):
-                dst_surface = slf.tings["font2"].render(r[i], True, BLACK)
-                slf.screen.blit(dst_surface, (tile.x + 205, tile.y + str_len + buf))
-                buf += 15
+            # buf = 0
+            # for i in range(0, len(r)):
+            #     dst_surface = slf.tings["font2"].render(r[i], True, BLACK)
+            #     slf.screen.blit(dst_surface, (tile.x + 205, tile.y + str_len + buf))
+            #     buf += 15
 
-            # st = ''.join([st[i:i+24] + ('    ' if (i // 24) % 2 == 0 else '')
-            #             for i in range(0, len(st), 24)])
+
         #
         else:
             buf = 0

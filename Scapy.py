@@ -92,6 +92,8 @@ class ScapyClass:
 
     def reset_packets(self):
         self.filtered_packets = self.packet_list
+        for k in self.prot_toggle:
+            self.prot_toggle[k] = False
 
     def toggle_reset(self):
         self.filtered_packets = self.packet_list

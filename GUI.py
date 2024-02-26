@@ -2,9 +2,13 @@ import pygame
 import sys
 import time
 import threading
+
 from scapy.all import *
 from scapy.all import IP, TCP, UDP, ARP, DNS, ICMP, SNMP, DHCP, BOOTP, L2TP, PPP, Raw, IPv6
-# import scapy.contrib.igmp
+from scapy.contrib.igmp import IGMP
+from scapy.contrib.igmpv3 import IGMPv3
+
+
 from datetime import datetime
 import random
 
@@ -31,6 +35,33 @@ DEFAULT_MIN = -sys.maxsize - 1
 DEFAULT_MAX = sys.maxsize
 
 SNIFFING_DONE = pygame.USEREVENT + 1
+
+filt_parameters = [
+        "eth:       x == src || dst MAC",
+        "src_eth:   x == src MAC",
+        "dst_eth:   x == dst MAC",
+        "ip:        x == src || dst IP",
+        "src_ip:    x == src IP",
+        "dst_ip:    x == dst IP",
+        "len:       x == IP length",
+        "ttl:       x == IP time to live",
+        "ver:       x == IP version",
+        "port:      x == src || dst TCP || UDP",
+        "sport:     x == src TCP || UDP",
+        "dport:     x == dst TCP || UDP",
+        "seq:       x == TCP sequence no.",
+        "ack:       x == TCP acknowledgement no.",
+        "urgptr:    x == TCP urgent pointer",
+        "flags:     x == flags TCP || UDP",
+        "icmp_type: x == ICMP type",
+        "icmp_code: x == ICMP code",
+        "dns_qn:    x == DNS ",
+        "dns_qr:    x == src || dst",
+        "http_mthd: x == http method",
+        "http_host: x == http host",
+        "http_uri:  x == http URI",
+        "prot:      x == protocol",
+    ]
 
 
 
@@ -110,6 +141,12 @@ def build_filter_elem(panels, font1, font2):
 
     flt_ele["clear_button"] = pygame.Rect(panels['bottom_right'].x + 260, panels['bottom_right'].y + 11, 40, 24)
     flt_ele["clear_button_text"] = font1.render('x', True, BLACK)
+
+    flt_ele["info_button"] = pygame.Rect(panels['bottom_right'].x + 307, panels['bottom_right'].y + 11, 40, 24)
+    flt_ele["info_button_text"] = font1.render('^', True, BLACK)
+
+    flt_ele["help_button"] = pygame.Rect(panels['bottom_right'].x + 354, panels['bottom_right'].y + 11, 40, 24)
+    flt_ele["help_button_text"] = font1.render('?', True, BLACK)
 
         #--- protocol toggles
 
@@ -320,13 +357,16 @@ class GUIClass:
         #---info
         info_ele = {}
         info_ele["display_text1"] = ''
-        info_ele["display_box1"] = pygame.Rect(panels['top_right'].x + 5, panels['top_right'].y + 5, 416, 150)
+        info_ele["display_box1"] = pygame.Rect(panels['top_right'].x + 5, panels['top_right'].y + 5, 416, 470)
 
         info_ele["display_text2"] = ''
         info_ele["display_box2"] = pygame.Rect(panels['top_right'].x + 5, panels['top_right'].y + 160, 416, 150)
 
         info_ele["display_text3"] = ''
         info_ele["display_box3"] = pygame.Rect(panels['top_right'].x + 5, panels['top_right'].y + 315, 416, 150)
+
+        info_ele["info_back_button"] = pygame.Rect(0, 0, 30, 20)
+        info_ele["info_fwd_button"] = pygame.Rect(0, 0, 30, 20)
 
         info_ele["info_raw_back_button"] = pygame.Rect(0, 0, 30, 20)
         info_ele["info_raw_fwd_button"] = pygame.Rect(0, 0, 30, 20)
@@ -376,7 +416,53 @@ class GUIClass:
 
         help_win = {}
 
-        # help_win["win"] = pygame.Rect(20, 20, 1240, 680)
+        help_win["1"] = pygame.Rect(80, 26, 230, 120)
+        help_win["1_text_1_1"] = font2.render('Back button returns to load.', True, BLACK)
+        help_win["1_text_1_2"] = font2.render('screen.', True, BLACK)
+        help_win["1_text_2"] = font2.render('Save button saves pcap.', True, BLACK)
+
+        help_win["2"] = pygame.Rect(100, 335, 230, 120)
+        help_win["2_text_1_1"] = font2.render('When a connection or node is', True, BLACK)
+        help_win["2_text_1_2"] = font2.render('selected, the related packets', True, BLACK)
+        help_win["2_text_1_3"] = font2.render('are shown in the list below.', True, BLACK)
+
+        help_win["3"] = pygame.Rect(50, 530, 230, 120)
+        help_win["3_text_1_1"] = font2.render('List of packets can be sorted', True, BLACK)
+        help_win["3_text_1_2"] = font2.render('by the banners above.', True, BLACK)
+        help_win["3_text_2_1"] = font2.render('When a packet is selected its', True, BLACK)
+        help_win["3_text_2_2"] = font2.render('info is shown upper right.', True, BLACK)
+
+        help_win["4"] = pygame.Rect(555, 80, 240, 120)
+        help_win["4_text_1_1"] = font2.render('Buttons on the right of the map', True, BLACK)
+        help_win["4_text_1_2"] = font2.render('control the repulsion, attraction', True, BLACK)
+        help_win["4_text_1_3"] = font2.render('and gravity of the node map from', True, BLACK)
+        help_win["4_text_1_4"] = font2.render('top to bottom.', True, BLACK)
+
+        help_win["5"] = pygame.Rect(583, 353, 230, 120)
+        help_win["5_text_1_1"] = font2.render('The ~ button can be used to', True, BLACK)
+        help_win["5_text_1_2"] = font2.render('switch the list between the', True, BLACK)
+        help_win["5_text_1_3"] = font2.render('packets of the selected map', True, BLACK)
+        help_win["5_text_1_4"] = font2.render('item and the whole map.', True, BLACK)
+
+        help_win["6"] = pygame.Rect(620, 543, 230, 120)
+        help_win["6_text_1_1"] = font2.render('Toggle buttons can be used to', True, BLACK)
+        help_win["6_text_1_2"] = font2.render('quickly filter the packets by', True, BLACK)
+        help_win["6_text_1_3"] = font2.render('protocol.', True, BLACK)
+
+        help_win["7"] = pygame.Rect(868, 350, 230, 120)
+        help_win["7_text_1_1"] = font2.render('Filter parameters can be used', True, BLACK)
+        help_win["7_text_1_2"] = font2.render('below to filter the packets', True, BLACK)
+        help_win["7_text_1_3"] = font2.render('included in the map. The X', True, BLACK)
+        help_win["7_text_1_4"] = font2.render('button clears the filters.', True, BLACK)
+
+        help_win["8"] = pygame.Rect(868, 520, 322, 130)
+        help_win["8_text_1_1"] = font2.render('The Host packets <> controls can be used to', True, BLACK)
+        help_win["8_text_1_2"] = font2.render('filter out hosts by packet amount.', True, BLACK)
+        help_win["8_text_2_1"] = font2.render('Play controls and Packets Included can be', True, BLACK)
+        help_win["8_text_2_2"] = font2.render('used to step through the pcap. The arrow', True, BLACK)
+        help_win["8_text_2_3"] = font2.render('buttons in the corner control play speed.', True, BLACK)
+
+
         # help_win["header"] = font1.render('~~Help~~', True, BLACK)
         # help_win["para"] = font2.render('Below is a brief description of the purpose of the quadrants and their main functions. \
         #                         To the right is a complete list of the fields that can be used to filter packets.', True, BLACK)
@@ -392,6 +478,7 @@ class GUIClass:
         self.load_elem = load_ele
         self.list_banner = list_ele
         self.map_ctl = map_ctl
+        self.help_win = help_win
         self.graph = None
         self.graph_pos = None
         self.screen_packets = None
@@ -412,7 +499,9 @@ class GUIClass:
         self.min = 0
         self.max = DEFAULT_MAX
         self.ascii_hex = False
+        self.helpp = False
         self.new_map = True
+        self.map_adj = False
         self.list_bools = {
             "time": False,
             "src": False,
@@ -533,7 +622,7 @@ class GUIClass:
         pygame.draw.rect(self.screen, YELLOW, (40, 370, 1200, 310))
         pygame.draw.rect(self.screen, BLUE, (490, 105, 300, 150))
         pygame.draw.rect(self.screen, BLUE, (462, 385, 355, 280))
-        self.screen.blit(self.load_elem["load_text"], (581, 130))
+        self.screen.blit(self.load_elem["load_text"], (560, 130))
         self.screen.blit(self.load_elem["if_text"], (self.load_elem["amt_box"].x + 80, self.load_elem["amt_box"].y + 5))
         if lres == False:
             self.load_elem["error_text"] = self.tings["font1"].render("That is not a valid path", True, BLACK)
@@ -858,10 +947,18 @@ class GUIClass:
                     return (Action.FILTER, self.filter_elem["input_text"])
 
                 if self.filter_elem["clear_button"].collidepoint(event.pos):
+                    self.filter_elem["input_text"] = ''
                     for i in range(1, 10):
                         st = f"toggle{i}_color"
                         self.filter_elem[st] = GRAY
                     return (Action.RESET, "")
+
+                if self.filter_elem["info_button"].collidepoint(event.pos):
+                    self.in_info = None
+
+                if self.filter_elem["help_button"].collidepoint(event.pos):
+                    print("hey there!")
+                    self.helpp = not self.helpp
 
                 self._check_active(event, "input_box", "input_box_active", "input_box_color")
                 # print("asdf")
@@ -909,7 +1006,7 @@ class GUIClass:
                 if self.filter_elem["play4"].collidepoint(event.pos):
                     self.filter_elem["play4_color"] = RED
                     self.filter_elem["play3_color"] = GRAY
-                    self.indices["play"]
+                    self.indices["play"] = 0
                     return (Action.STOP, "")
                 if self.filter_elem["play5"].collidepoint(event.pos):
                     self.filter_elem["play5_color"] = RED
@@ -959,6 +1056,16 @@ class GUIClass:
                 if self.list_banner["list_banner8"].collidepoint(event.pos):
                     if self.indices["list"] < len(self.list_elem) - 6:
                         self.indices["list"] += 1
+
+                if self.info_elem["info_back_button"].collidepoint(event.pos):
+                    if self.indices["info_page"] > 0:
+                        self.indices["info_page"] -= 1
+
+                    pass
+                if self.info_elem["info_fwd_button"].collidepoint(event.pos):
+                    if self.indices["info_page"] < 1:
+                        self.indices["info_page"] += 1
+                    pass
 
 
                 if self.info_elem["info_raw_back_button"].collidepoint(event.pos):
@@ -1022,6 +1129,7 @@ class GUIClass:
 
                 if self.map_ctl["rep_const_up"].collidepoint(event.pos):
                     self.new_map = True
+                    self.map_adj = True
                     self.indices["rep_const"] = round(self.indices["rep_const"] + .1, 1)
                     return (Action.RESEND, "")
                     pass
@@ -1029,12 +1137,14 @@ class GUIClass:
                 if self.map_ctl["rep_const_dw"].collidepoint(event.pos):
                     if self.indices["rep_const"] > 0.1:
                         self.new_map = True
+                        self.map_adj = True
                         self.indices["rep_const"] = round(self.indices["rep_const"] - .1, 1)
                         return (Action.RESEND, "")
                     pass
 
                 if self.map_ctl["att_const_up"].collidepoint(event.pos):
                     self.new_map = True
+                    self.map_adj = True
                     self.indices["att_const"] = round(self.indices["att_const"] + .1, 1)
                     return (Action.RESEND, "")
 
@@ -1044,12 +1154,14 @@ class GUIClass:
                     if self.indices["att_const"] > 0.1:
                         self.indices["att_const"] = round(self.indices["att_const"] - .1, 1)
                         self.new_map = True
+                        self.map_adj = True
                         return (Action.RESEND, "")
                     pass
 
                 if self.map_ctl["glob_const_up"].collidepoint(event.pos):
                     self.indices["glob_const"] = round(self.indices["glob_const"] + .1, 1)
                     self.new_map = True
+                    self.map_adj = True
                     return (Action.RESEND, "")
                     pass
 
@@ -1057,6 +1169,7 @@ class GUIClass:
                     if self.indices["glob_const"] > 0.1:
                         self.indices["glob_const"] = round(self.indices["glob_const"] - .1, 1)
                         self.new_map = True
+                        self.map_adj = True
                         return (Action.RESEND, "")
                     pass
 
@@ -1385,21 +1498,50 @@ class GUIClass:
                 icmp["ptr"] = str(pkt[ICMP].ptr)
             to_show.append(icmp)
             pass
+
+        # if pkt.haslayer(ICMPv6)
+        #     icmp6 = {
+        #         "hdr_type": "icmp6",
+        #         "type": str(pkt[ICMPv6].type),
+        #         "code": str(pkt[ICMPv6].code),
+        #         "check": str(pkt[ICMPv6].cksum),
+        #     }
+        #     to_show.append(icmp6)
+
         if IP in pkt and pkt[IP].proto == 2:
-            # print(pkt.show())
+            print(pkt.show())
             igmp = {}
             igmp["hdr_type"] = "igmp"
-            temp = str(pkt.getlayer(Raw).load)
-            ch1 = temp.split("\\")
-            ttype = ch1[1].strip()
-            igmp["type"] = ttype
-            if ttype in ["x11", "x12", "x16", "x17"]:
-                igmp["mrt"] = ch1[2].strip()
-                igmp["check"] = f"{ch1[3].replace('x', '').strip()}{ch1[4].replace('x', '').strip()}"
-                igmp["addr"] = f"{ch1[5].replace('x', '').strip()}.{ch1[5].replace('x', '').strip()}.{ch1[6].strip()}.{ch1[7].replace('x', '').strip()}"
-            else:
-                # igmp["mrc"] =
-                pass
+            # temp = str(pkt.getlayer(Raw).load)
+            # print(temp)
+
+
+            if pkt.haslayer(IGMP):
+                print("Hey man its ok")
+                igmp["ver"] = "0"
+                igmp["type"] = str(pkt[IGMP].type)
+                igmp["mrt"] = str(pkt[IGMP].mrcode)
+                igmp["check"] = str(pkt[IGMP].chksum)
+                igmp["group"] = str(pkt[IGMP].gaddr)
+            elif pkt.haslayer(IGMPv3):
+                igmp["ver"] = "1"
+                igmp["type"] = str(pkt[IGMPv3].type)
+                igmp["mrcode"] = str(pkt[IGMPv3].mrcode)
+                igmp["check"] = str(pkt[IGMPv3].chksum)
+
+            # ch1 = temp.split("\\")
+            # ttype = ch1[1].strip()
+            # ttype = pkt[IP].payload.type
+            # group = pkt[IP].payload.group
+            # igmp["type"] = ttype
+            # igmp["group"] = group
+            # if ttype in ["x11", "x12", "x16", "x17"]:
+            #     igmp["mrt"] = ch1[2].strip()
+            #     igmp["check"] = f"{ch1[3].replace('x', '').strip()}{ch1[4].replace('x', '').strip()}"
+            #     igmp["addr"] = f"{ch1[5].replace('x', '').strip()}.{ch1[5].replace('x', '').strip()}.{ch1[6].strip()}.{ch1[7].replace('x', '').strip()}"
+            # else:
+            #     # igmp["mrc"] =
+            #     pass
             to_show.append(igmp)
         if pkt.haslayer(ARP):
             arp = {
@@ -1458,14 +1600,12 @@ class GUIClass:
         # nodes = self.node_elem
         positions = {}
         pos = None
-        if self.new_map: # and sorted(node_list) != sorted(self.screen_keys):
+        if self.new_map and (sorted(node_list) != sorted(self.screen_keys) or self.map_adj):
             self.screen_keys = node_list
             self.new_map = False
+            self.map_adj = False
             print(f"min {self.min} max {self.max}")
             for i in self.node_elem.values():
-                # if (self.min != 0 or self.max != 0) and (len(i.get_packet_list()) < self.min or len(i.get_packet_list()) > self.max):
-                    # print(f"min {self.min} max {self.max} len: {len(i.get_packet_list())}")
-                    # continue
                 positions[i.get_mac()] = (i.get_sprite_props()["sprite"].x, i.get_sprite_props()["sprite"].y)
             pos = update_positions(node_list, positions, conn_list, repulsive_const=self.indices["rep_const"], attractive_const=self.indices["att_const"], global_attractive_const=self.indices["glob_const"])
 
@@ -1532,32 +1672,118 @@ class GUIClass:
         if ac_bool == False:
             print("heyyy")
             pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box1"])
-            display_surface = self.tings["font2"].render(self.info_elem["display_text1"], True, BLACK)
-            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 5))
-
-            pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box2"])
-            display_surface = self.tings["font2"].render(self.info_elem["display_text2"], True, BLACK)
-            self.screen.blit(display_surface, (self.info_elem["display_box2"].x + 5, self.info_elem["display_box2"].y + 5))
-
-            pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box3"])
             display_surface = self.tings["font2"].render("That is not a correct filter option", True, BLACK)
-            self.screen.blit(display_surface, (self.info_elem["display_box3"].x + 100, self.info_elem["display_box3"].y + 50))
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 250))
+
+            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box2"])
+            # display_surface = self.tings["font2"].render(self.info_elem["display_text2"], True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box2"].x + 5, self.info_elem["display_box2"].y + 5))
+            #
+            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box3"])
+            # display_surface = self.tings["font2"].render("That is not a correct filter option", True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box3"].x + 100, self.info_elem["display_box3"].y + 50))
             return None
 
 
         if self.in_info == None:
             pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box1"])
-            display_surface = self.tings["font2"].render(self.info_elem["display_text1"], True, BLACK)
-            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 5))
-
-            pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box2"])
-            display_surface = self.tings["font2"].render(self.info_elem["display_text2"], True, BLACK)
-            self.screen.blit(display_surface, (self.info_elem["display_box2"].x + 5, self.info_elem["display_box2"].y + 5))
 
 
-            pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box3"])
-            display_surface = self.tings["font2"].render(self.info_elem["display_text3"], True, BLACK)
-            self.screen.blit(display_surface, (self.info_elem["display_box3"].x + 5, self.info_elem["display_box3"].y + 5))
+            display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 150, self.info_elem["display_box1"].y + 5))
+
+            display_surface = self.tings["font2"].render("Node", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 60))
+
+            display_surface = self.tings["font2"].render("Repulsion", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 75))
+
+            display_surface = self.tings["font2"].render("Conn", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 215))
+
+            display_surface = self.tings["font2"].render("Attraction", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 230))
+
+            display_surface = self.tings["font2"].render("Gravity", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 380))
+
+
+
+            display_surface = self.tings["font2"].render("-Seclect node map elements to view information", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 35))
+
+            display_surface = self.tings["font2"].render("and packets related to that element.", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 50))
+
+            display_surface = self.tings["font2"].render("-Filter parameters can be used below to filter", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 70))
+
+            display_surface = self.tings["font2"].render("the packets that are included in the map.", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 85))
+
+            display_surface = self.tings["font2"].render("-The play functionality can be used to step", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 105))
+
+            display_surface = self.tings["font2"].render("through the pcap packet by packet to observe", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 120))
+
+            display_surface = self.tings["font2"].render("the network's traffic.", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 135))
+
+            display_surface = self.tings["font2"].render("-The 'Host packets' and 'Packets incld.' can", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 155))
+
+            display_surface = self.tings["font2"].render("be used to limit hosts by packet amount and", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 170))
+
+            display_surface = self.tings["font2"].render("control the amount of packets that are used", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 185))
+
+            display_surface = self.tings["font2"].render("to create the node map.", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 200))
+
+            display_surface = self.tings["font2"].render("Filter parameters:", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 90, self.info_elem["display_box1"].y + 225))
+
+            self.info_elem["info_back_button"] = pygame.Rect(self.info_elem["display_box1"].x + 300, self.info_elem["display_box1"].y + 225 , 30, 20)
+            pygame.draw.rect(self.screen, GRAY, self.info_elem["info_back_button"])
+            dst_surface = self.tings["font2"].render("<", True, BLACK)
+            self.screen.blit(dst_surface, (self.info_elem["info_back_button"].x + 10, self.info_elem["info_back_button"].y + 2))
+            #
+            self.info_elem["info_fwd_button"] = pygame.Rect(self.info_elem["display_box1"].x + 335, self.info_elem["display_box1"].y + 225 , 30, 20)
+            pygame.draw.rect(self.screen, GRAY, self.info_elem["info_fwd_button"])
+            dst_surface = self.tings["font2"].render(">", True, BLACK)
+            self.screen.blit(dst_surface, (self.info_elem["info_fwd_button"].x + 10, self.info_elem["info_fwd_button"].y + 2))
+
+
+            depth = 0
+
+            chk = 12
+
+            for i in range(self.indices["info_page"] * chk, self.indices["info_page"] * chk + chk):
+                display_surface = self.tings["font2"].render(filt_parameters[i], True, BLACK)
+                self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 85, self.info_elem["display_box1"].y + 255 + depth))
+                depth += 15
+
+
+
+            # display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 5))
+            #
+            # display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 5))
+            #
+            # display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 5))
+
+            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box2"])
+            # display_surface = self.tings["font2"].render(self.info_elem["display_text2"], True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box2"].x + 5, self.info_elem["display_box2"].y + 5))
+            #
+            #
+            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box3"])
+            # display_surface = self.tings["font2"].render(self.info_elem["display_text3"], True, BLACK)
+            # self.screen.blit(display_surface, (self.info_elem["display_box3"].x + 5, self.info_elem["display_box3"].y + 5))
         else:
             # is_raw
             depth = 0
@@ -1620,7 +1846,8 @@ class GUIClass:
                 date = df + fractional_seconds
                 elem.sprite_props["sprite"].y = self.panels['bottom_left'].y + 30 + buf
                 pygame.draw.rect(self.screen, RED, elem.sprite_props["sprite"], 1)
-                self.screen.blit(self.tings["font2"].render(f"{date} | {elem.packet.summary()}", True, BLACK), (elem.sprite_props["sprite"].x + 5, elem.sprite_props["sprite"].y + 5))
+                t = elem.packet.summary()
+                self.screen.blit(self.tings["font2"].render(f"{date} | {t[:95]}", True, BLACK), (elem.sprite_props["sprite"].x + 5, elem.sprite_props["sprite"].y + 5))
                 buf += 35
         else:
             buf = 0
@@ -1631,7 +1858,8 @@ class GUIClass:
                 date = df + fractional_seconds
                 elem.sprite_props["sprite"].y = self.panels['bottom_left'].y + 30 + buf
                 pygame.draw.rect(self.screen, RED, elem.sprite_props["sprite"], 1)
-                self.screen.blit(self.tings["font2"].render(f"{date} | {elem.packet.summary()}", True, BLACK), (elem.sprite_props["sprite"].x + 5, elem.sprite_props["sprite"].y + 5))
+                t = elem.packet.summary()
+                self.screen.blit(self.tings["font2"].render(f"{date} | {t[:95]}", True, BLACK), (elem.sprite_props["sprite"].x + 5, elem.sprite_props["sprite"].y + 5))
                 buf += 35
         pass
 
@@ -1695,6 +1923,11 @@ class GUIClass:
         pygame.draw.rect(self.screen, GRAY, self.filter_elem["clear_button"])
         self.screen.blit(self.filter_elem["clear_button_text"], (self.filter_elem["clear_button"].x + 14, self.filter_elem["clear_button"].y - 1))
 
+        pygame.draw.rect(self.screen, GRAY, self.filter_elem["info_button"])
+        self.screen.blit(self.filter_elem["info_button_text"], (self.filter_elem["info_button"].x + 14, self.filter_elem["info_button"].y + 5))
+
+        pygame.draw.rect(self.screen, GRAY, self.filter_elem["help_button"])
+        self.screen.blit(self.filter_elem["help_button_text"], (self.filter_elem["help_button"].x + 14, self.filter_elem["help_button"].y + 1))
         #--
 
         pygame.draw.rect(self.screen, self.filter_elem["toggle1_color"], self.filter_elem["toggle1"])
@@ -1720,16 +1953,15 @@ class GUIClass:
         # line width = 338
         pygame.draw.rect(self.screen, self.filter_elem["play_line_color"], self.filter_elem["play_line"])
 
-        if self.f_len != 0 and self.indices["play"]:
+
+
+        if self.f_len and self.indices["play"]:
             lidx = self.f_len / self.indices["play"]
             play_x = 334 // lidx
             self.filter_elem["play_buf_1"].x = self.filter_elem["play_line"].x + play_x
+        elif not self.indices["play"]:
+            self.filter_elem["play_buf_1"].x = self.filter_elem["play_line"].x
         pygame.draw.rect(self.screen, self.filter_elem["play_buf_1_color"], self.filter_elem["play_buf_1"])
-
-
-        # pygame.draw.rect(self.screen, self.filter_elem["play_buf_2_color"], self.filter_elem["play_buf_2"])
-
-
 
         pygame.draw.rect(self.screen, self.filter_elem["play1_color"], self.filter_elem["play1"])
         self.screen.blit(self.filter_elem["play1_text"], (self.filter_elem["play1"].x + 13, self.filter_elem["play1"].y + 2))
@@ -1743,10 +1975,10 @@ class GUIClass:
         if self.filter_elem["play3_color"] == GRAY:
             self.screen.blit(self.filter_elem["play3_text1"], (self.filter_elem["play3"].x + 18, self.filter_elem["play3"].y + 3))
         else:
-            self.screen.blit(self.filter_elem["play3_text2"], (self.filter_elem["play3"].x + 18, self.filter_elem["play3"].y + 3))
+            self.screen.blit(self.filter_elem["play3_text2"], (self.filter_elem["play3"].x + 12, self.filter_elem["play3"].y + 2))
 
         pygame.draw.rect(self.screen, self.filter_elem["play4_color"], self.filter_elem["play4"])
-        self.screen.blit(self.filter_elem["play4_text"], (self.filter_elem["play4"].x + 20, self.filter_elem["play4"].y + 3))
+        self.screen.blit(self.filter_elem["play4_text"], (self.filter_elem["play4"].x + 18, self.filter_elem["play4"].y + 2))
 
 
         pygame.draw.rect(self.screen, self.filter_elem["play5_color"], self.filter_elem["play5"])
@@ -1757,10 +1989,10 @@ class GUIClass:
         self.screen.blit(self.filter_elem["play6_text"], (self.filter_elem["play6"].x + 13, self.filter_elem["play6"].y + 2))
 
         pygame.draw.rect(self.screen, self.filter_elem["spd_up_color"], self.filter_elem["spd_up"])
-        self.screen.blit(self.filter_elem["spd_up_text"], (self.filter_elem["spd_up"].x + 15, self.filter_elem["spd_up"].y + 3))
+        self.screen.blit(self.filter_elem["spd_up_text"], (self.filter_elem["spd_up"].x + 15, self.filter_elem["spd_up"].y + 0))
 
         pygame.draw.rect(self.screen, self.filter_elem["spd_dw_color"], self.filter_elem["spd_dw"])
-        self.screen.blit(self.filter_elem["spd_dw_text"], (self.filter_elem["spd_dw"].x + 15, self.filter_elem["spd_dw"].y + 3))
+        self.screen.blit(self.filter_elem["spd_dw_text"], (self.filter_elem["spd_dw"].x + 15, self.filter_elem["spd_dw"].y + 0))
 
 
         pygame.draw.rect(self.screen, self.filter_elem["range_box_color"], self.filter_elem["range_box"], 1)
@@ -1835,6 +2067,55 @@ class GUIClass:
         self._update_nodes()
         # self._update_info()
         self._update_list()
+
+        if self.helpp:
+            # print("helping")
+            pygame.draw.rect(self.screen, GRAY, self.help_win["1"])
+            self.screen.blit(self.help_win["1_text_1_1"], (self.help_win["1"].x + 5, self.help_win["1"].y + 3))
+            self.screen.blit(self.help_win["1_text_1_2"], (self.help_win["1"].x + 5, self.help_win["1"].y + 18))
+            self.screen.blit(self.help_win["1_text_2"], (self.help_win["1"].x + 5, self.help_win["1"].y + 50))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["2"])
+            self.screen.blit(self.help_win["2_text_1_1"], (self.help_win["2"].x + 5, self.help_win["2"].y + 3))
+            self.screen.blit(self.help_win["2_text_1_2"], (self.help_win["2"].x + 5, self.help_win["2"].y + 18))
+            self.screen.blit(self.help_win["2_text_1_3"], (self.help_win["2"].x + 5, self.help_win["2"].y + 33))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["3"])
+            self.screen.blit(self.help_win["3_text_1_1"], (self.help_win["3"].x + 5, self.help_win["3"].y + 3))
+            self.screen.blit(self.help_win["3_text_1_2"], (self.help_win["3"].x + 5, self.help_win["3"].y + 18))
+            self.screen.blit(self.help_win["3_text_2_1"], (self.help_win["3"].x + 5, self.help_win["3"].y + 50))
+            self.screen.blit(self.help_win["3_text_2_2"], (self.help_win["3"].x + 5, self.help_win["3"].y + 65))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["4"])
+            self.screen.blit(self.help_win["4_text_1_1"], (self.help_win["4"].x + 5, self.help_win["4"].y + 3))
+            self.screen.blit(self.help_win["4_text_1_2"], (self.help_win["4"].x + 5, self.help_win["4"].y + 18))
+            self.screen.blit(self.help_win["4_text_1_3"], (self.help_win["4"].x + 5, self.help_win["4"].y + 33))
+            self.screen.blit(self.help_win["4_text_1_4"], (self.help_win["4"].x + 5, self.help_win["4"].y + 48))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["5"])
+            self.screen.blit(self.help_win["5_text_1_1"], (self.help_win["5"].x + 5, self.help_win["5"].y + 3))
+            self.screen.blit(self.help_win["5_text_1_2"], (self.help_win["5"].x + 5, self.help_win["5"].y + 18))
+            self.screen.blit(self.help_win["5_text_1_3"], (self.help_win["5"].x + 5, self.help_win["5"].y + 33))
+            self.screen.blit(self.help_win["5_text_1_4"], (self.help_win["5"].x + 5, self.help_win["5"].y + 48))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["6"])
+            self.screen.blit(self.help_win["6_text_1_1"], (self.help_win["6"].x + 5, self.help_win["6"].y + 3))
+            self.screen.blit(self.help_win["6_text_1_2"], (self.help_win["6"].x + 5, self.help_win["6"].y + 18))
+            self.screen.blit(self.help_win["6_text_1_3"], (self.help_win["6"].x + 5, self.help_win["6"].y + 33))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["7"])
+            self.screen.blit(self.help_win["7_text_1_1"], (self.help_win["7"].x + 5, self.help_win["7"].y + 3))
+            self.screen.blit(self.help_win["7_text_1_2"], (self.help_win["7"].x + 5, self.help_win["7"].y + 18))
+            self.screen.blit(self.help_win["7_text_1_3"], (self.help_win["7"].x + 5, self.help_win["7"].y + 33))
+            self.screen.blit(self.help_win["7_text_1_4"], (self.help_win["7"].x + 5, self.help_win["7"].y + 48))
+
+            pygame.draw.rect(self.screen, GRAY, self.help_win["8"])
+            self.screen.blit(self.help_win["8_text_1_1"], (self.help_win["8"].x + 5, self.help_win["8"].y + 3))
+            self.screen.blit(self.help_win["8_text_1_2"], (self.help_win["8"].x + 5, self.help_win["8"].y + 18))
+            self.screen.blit(self.help_win["8_text_2_1"], (self.help_win["8"].x + 5, self.help_win["8"].y + 70))
+            self.screen.blit(self.help_win["8_text_2_2"], (self.help_win["8"].x + 5, self.help_win["8"].y + 85))
+            self.screen.blit(self.help_win["8_text_2_3"], (self.help_win["8"].x + 5, self.help_win["8"].y + 100))
+
         pygame.display.flip()
 
         if ac_bool == False:
@@ -1865,7 +2146,6 @@ class GUIClass:
         self.filter_elem["play6_color"] = GRAY
         pygame.draw.rect(self.screen, self.filter_elem["play6_color"], self.filter_elem["play6"])
         self.screen.blit(self.filter_elem["play6_text"], (self.filter_elem["play6"].x + 15, self.filter_elem["play6"].y + 3))
-
 
 
 

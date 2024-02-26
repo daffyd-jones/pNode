@@ -69,7 +69,10 @@ def fwd(self, res):
     return True
 
 def prange(self, res):
-    self.step_range = int(res[1])
+    t = 6
+    if res[1] != "":
+        t = res[1]
+    self.step_range = int(t)
     self.GUI.step_through(self.step_position, self.step_range, self.Scapy.get_filtered_packets())
 
     return True
