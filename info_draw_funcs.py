@@ -142,7 +142,6 @@ def draw_tcp(slf, hdr, depth):
     return depth
     pass
 
-
 def draw_udp(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 150)
     pygame.draw.rect(slf.screen, WHITE, tile)
@@ -320,27 +319,6 @@ def draw_igmp(slf, hdr, depth):
         slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 50))
         dst_surface = slf.tings["font2"].render(hdr["check"], True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 65))
-    #
-    # if hdr["type"] == "x22":
-    #     pass
-    # else:
-    #     dst_surface = slf.tings["font2"].render("Type:", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 35))
-    #     dst_surface = slf.tings["font2"].render("Trans:", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 50))
-    #     dst_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 65))
-    #     dst_surface = slf.tings["font2"].render("Group Address:", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80))
-    #     #
-    #     dst_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 35))
-    #     dst_surface = slf.tings["font2"].render(hdr["mrt"], True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 50))
-    #     dst_surface = slf.tings["font2"].render(hdr["check"], True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 65))
-    #     dst_surface = slf.tings["font2"].render(hdr["addr"], True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 120, tile.y + 80))
     return depth
 
 def draw_arp(slf, hdr, depth):
@@ -398,7 +376,7 @@ def draw_raw(slf, hdr, depth):
     else:
         rstr = str(hdr["str"].decode('ascii', errors='ignore')).replace('\0', '')
     lchnk = 5
-    str_len = 46
+    str_len = 55
     h_chk = 150
     h_num = len(rstr) // (lchnk * str_len)
     pchnk = (26 * 48)
@@ -781,5 +759,690 @@ def draw_ip6(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 120, tile.y + 110))
     src_surface = slf.tings["font2"].render(hdr["hlim"], True, BLACK)
     slf.screen.blit(src_surface, (tile.x + 330, tile.y + 65))
+    return depth
+    pass
+
+def draw_ip6_hop(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- Hop by Hop -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Next Header:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Length:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Options:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 65))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["nh"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["len"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    # length_surface = slf.tings["font2"].render(str(hdr["options"]), True, BLACK)
+    # slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    # print(f"### {hdr['options']}")
+    b = 0
+    for a in hdr["options"]:
+        # print(a)
+        if hasattr(a, 'value'):
+            dst_surface = slf.tings["font2"].render(f"{a}: OType: {a.otype} OptLen: {a.optlen} Data: {a.value}", True, BLACK)
+            slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80 + b))
+            b += 15
+            continue
+        dst_surface = slf.tings["font2"].render(f"{a}: OType: {a.otype} OptLen: {a.optlen}", True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80 + b))
+        b += 15
+    #
+    return depth
+    pass
+
+def draw_ip6_dest_ops(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- Destination Options -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Length:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Next Header:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Options:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 65))
+    #
+    time_surface = slf.tings["font2"].render(hdr["len"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["nh"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    # length_surface = slf.tings["font2"].render(hdr["options"], True, BLACK)
+    # slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    b = 0
+    for a in hdr["options"]:
+        # print(a)
+        dst_surface = slf.tings["font2"].render(f"{a}", True, BLACK)
+        slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+        b += 15
+    #
+    return depth
+    pass
+
+def draw_ip6_routing(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- Routing -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Length:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Routing Type:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 50))
+    time_surface = slf.tings["font2"].render("Segments Left:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Address:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("Next Header:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["len"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    time_surface = slf.tings["font2"].render(hdr["segleft"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["addr"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["nh"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_ip6_fragment(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- Fragment -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Offset:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("ID:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("M:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Next Header:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["offset"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["id"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["m"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["nh"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+#//---
+
+def draw_icmp6_echo_req(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Echo Request -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("ID:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("Sequence No:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 95))
+    length_surface = slf.tings["font2"].render("Data:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 110))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["id"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["seq"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
+    length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_echo_rep(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Echo Reply -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("ID:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("Sequence No:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 95))
+    length_surface = slf.tings["font2"].render("Data:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 110))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["id"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["seq"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
+    length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_dest_un(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Dest. Unreachable -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Length:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["length"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_too_big(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Too Big -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("MTU:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["mtu"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_time_ex(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Time Exceeded -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Length:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["length"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_param_prob(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Parameter Problem -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Pointer:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["ptr"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_ni_quer(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Node Info Query -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("QType:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("Flags:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 95))
+    length_surface = slf.tings["font2"].render("Data:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 110))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["qtype"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["flags"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
+    length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_ni_rep(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Node Info Reply -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("QType:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("Flags:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 95))
+    length_surface = slf.tings["font2"].render("Data:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 110))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["qtype"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["flags"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
+    length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_nd_rs(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Router Solicitation -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Res:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["res"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_nd_ra(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Router Advertisement -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 5, tile.y + 50))
+    src_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(src_surface, (tile.x + 5, tile.y + 65))
+    dst_surface = slf.tings["font2"].render("Cur Hop Limit:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 80))
+    dst_surface = slf.tings["font2"].render("M:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 95))
+    dst_surface = slf.tings["font2"].render("Reachable Time:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110))
+    dst_surface = slf.tings["font2"].render("Retransmit Timer:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 125))
+    time_surface = slf.tings["font2"].render("O:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 240, tile.y + 35))
+    length_surface = slf.tings["font2"].render("H:", True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 240, tile.y + 50))
+    src_surface = slf.tings["font2"].render("prf:", True, BLACK)
+    slf.screen.blit(src_surface, (tile.x + 240, tile.y + 65))
+    dst_surface = slf.tings["font2"].render("P:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 240, tile.y + 80))
+    dst_surface = slf.tings["font2"].render("Res:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 240, tile.y + 95))
+    dst_surface = slf.tings["font2"].render("Router Lifetime:", True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 240, tile.y + 110))
+    # dst_surface = slf.tings["font2"].render("Options:", True, BLACK)
+    # slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 95))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    src_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(src_surface, (tile.x + 130, tile.y + 65))
+    dst_surface = slf.tings["font2"].render(hdr["cglim"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 80))
+    dst_surface = slf.tings["font2"].render(hdr["M"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 95))
+    dst_surface = slf.tings["font2"].render(hdr["retime"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 110))
+    dst_surface = slf.tings["font2"].render(hdr["rettimer"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 125))
+    time_surface = slf.tings["font2"].render(hdr["O"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 340, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["H"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 340, tile.y + 50))
+    src_surface = slf.tings["font2"].render(hdr["prf"], True, BLACK)
+    slf.screen.blit(src_surface, (tile.x + 340, tile.y + 65))
+    dst_surface = slf.tings["font2"].render(hdr["P"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 80))
+    dst_surface = slf.tings["font2"].render(hdr["res"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 95))
+    dst_surface = slf.tings["font2"].render(hdr["routlt"], True, BLACK)
+    slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 110))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_nd_ns(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Neighbor Solicitation -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("Res:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("Target:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 95))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["res"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["tgt"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
+    return depth
+    pass
+
+def draw_icmp6_nd_na(slf, hdr, depth):
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    pygame.draw.rect(slf.screen, WHITE, tile)
+    #
+    depth += 305
+    #
+    time_surface = slf.tings["font2"].render("- ICMPv6 Neighbor Advertisement -", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))
+    #
+    time_surface = slf.tings["font2"].render("Type:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 35))
+    length_surface = slf.tings["font2"].render("Code:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 50))
+    length_surface = slf.tings["font2"].render("Checksum:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 65))
+    length_surface = slf.tings["font2"].render("R:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 80))
+    length_surface = slf.tings["font2"].render("R:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 95))
+    length_surface = slf.tings["font2"].render("R:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 110))
+    length_surface = slf.tings["font2"].render("R:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 125))
+    length_surface = slf.tings["font2"].render("R:", True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 5, tile.y + 140))
+    #
+    #
+    time_surface = slf.tings["font2"].render(hdr["type"], True, BLACK)
+    slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
+    length_surface = slf.tings["font2"].render(hdr["code"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
+    length_surface = slf.tings["font2"].render(hdr["cksum"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
+    length_surface = slf.tings["font2"].render(hdr["R"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
+    length_surface = slf.tings["font2"].render(hdr["S"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
+    length_surface = slf.tings["font2"].render(hdr["O"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
+    length_surface = slf.tings["font2"].render(hdr["res"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 125))
+    length_surface = slf.tings["font2"].render(hdr["tgt"], True, BLACK)
+    slf.screen.blit(length_surface, (tile.x + 130, tile.y + 140))
+    # b = 0
+    # for a in hdr["options"]:
+    #     # print(a)
+    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
+    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
+    #     b += 15
+    # #
     return depth
     pass

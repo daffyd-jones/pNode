@@ -218,7 +218,7 @@ def build_filter_elem(panels, font1, font2):
     flt_ele["play3_color"] = GRAY
 
     flt_ele["play4"] = pygame.Rect(panels['bottom_right'].x + 182, panels['bottom_right'].y + 202, 48, 30)
-    flt_ele["play4_text"] = font1.render('\u23F9', True, BLACK)
+    flt_ele["play4_text"] = font1.render('\u25A0', True, BLACK)
     flt_ele["play4_active"] = False
     flt_ele["play4_color"] = GRAY
 
@@ -275,8 +275,10 @@ class GUIClass:
         # font1 = pygame.font.Font(None, 30)
         # font2 = pygame.font.Font(None, 20)
 
-        font1 = pygame.font.SysFont("Consolas", 20)
-        font2 = pygame.font.SysFont("Consolas", 12)
+        font_path = "/home/daffyd/Desktop/skoo/proj/aaaaaa/fonts/FiraCode-SemiBold.ttf"
+
+        font1 = pygame.font.Font(font_path, 20)
+        font2 = pygame.font.Font(font_path, 12)
         # font2.set_bold(True)
 
         tings = {}
@@ -338,7 +340,7 @@ class GUIClass:
         list_ele["list_banner4_text"] = font2.render('protocol', True, BLACK)
 
         list_ele["list_banner5"] = pygame.Rect(panels['bottom_left'].x + 625, panels['bottom_left'].y + 5, 183, 20)
-        list_ele["list_banner5_text"] = font2.render('info', True, BLACK)
+        list_ele["list_banner5_text"] = font2.render('length', True, BLACK)
 
         list_ele["list_banner6"] = pygame.Rect(panels['bottom_left'].x + 813, panels['bottom_left'].y + 5, 30, 20)
         list_ele["list_banner6_text"] = font2.render('~', True, BLACK)
@@ -507,6 +509,7 @@ class GUIClass:
             "src": False,
             "dst": False,
             "prot": False,
+            "len": False,
             "scroll_bar_drag": False,
         }
         self.indices = {
@@ -636,7 +639,7 @@ class GUIClass:
             temp = temp[self.indices["load"]: self.indices["load"] + 15]
         ld_surface = self.tings["font1"].render(temp, True, BLACK)
         pygame.draw.rect(self.screen, self.load_elem["input_box_color"], self.load_elem["input_box"], 1)
-        self.screen.blit(ld_surface, (self.load_elem["input_box"].x + 3, self.load_elem["input_box"].y + 5))
+        self.screen.blit(ld_surface, (self.load_elem["input_box"].x + 3, self.load_elem["input_box"].y + 3))
 
         temp = self.load_elem["amt_text"]
         if len(temp) > 5:
@@ -644,7 +647,7 @@ class GUIClass:
             temp = temp[self.indices["pkt_amt"]: self.indices["pkt_amt"] + 5]
         ld_surface = self.tings["font1"].render(temp, True, BLACK)
         pygame.draw.rect(self.screen, self.load_elem["amt_box_color"], self.load_elem["amt_box"], 1)
-        self.screen.blit(ld_surface, (self.load_elem["amt_box"].x + 3, self.load_elem["amt_box"].y + 5))
+        self.screen.blit(ld_surface, (self.load_elem["amt_box"].x + 3, self.load_elem["amt_box"].y + 3))
 
         pygame.draw.rect(self.screen, self.load_elem["if_up_color"], self.load_elem["if_up"])
         self.screen.blit(self.load_elem["if_up_text"], (self.load_elem["if_up"].x + 10, self.load_elem["if_up"].y + 2))
@@ -1045,10 +1048,36 @@ class GUIClass:
                         self.list_bools["dst"] = not self.list_bools["dst"]
                         self.list_elem = sorted(self.list_elem, key=lambda x: x.packet[IP].dst if x.packet.haslayer(IP) else "255.255.255.255", reverse=True)
                 if self.list_banner["list_banner4"].collidepoint(event.pos):
-                    self.list_elem = sorted(self.list_elem, key=lambda x: x.packet[IP].proto if x.packet.haslayer(IP) else "") # protocol needs to be filled out
+                    if not self.list_bools["prot"]:
+                        self.list_bools["prot"] = not self.list_bools["prot"]
+                        # self.list_elem = sorted(self.list_elem, key=lambda x: x.packet[IP].proto if x.packet.haslayer(IP) else 0)
+                        self.list_elem = sorted(self.list_elem, key=lambda x: (
+                            x.packet[IP].proto if x.packet.haslayer(IP) else (
+                                x.packet[IPv6].nh if x.packet.haslayer(IPv6) else (
+                                    x.packet[ARP].op if x.packet.haslayer(ARP) else 0
+                                )
+                            )
+                        ))
+                    else:
+                        self.list_bools["prot"] = not self.list_bools["prot"]
+                        # self.list_elem = sorted(self.list_elem, key=lambda x: x.packet[IP].proto if x.packet.haslayer(IP) else 0, reverse=True)
+                        self.list_elem = sorted(self.list_elem, key=lambda x: (
+                            x.packet[IP].proto if x.packet.haslayer(IP) else (
+                                x.packet[IPv6].nh if x.packet.haslayer(IPv6) else (
+                                    x.packet[ARP].op if x.packet.haslayer(ARP) else 0
+                                )
+                            )
+                        ), reverse=True)
+                if self.list_banner["list_banner5"].collidepoint(event.pos):
+                    if not self.list_bools["len"]:
+                        self.list_bools["len"] = not self.list_bools["len"]
+                        self.list_elem = sorted(self.list_elem, key=lambda x: len(raw(x.packet)))
+                    else:
+                        self.list_bools["len"] = not self.list_bools["len"]
+                        self.list_elem = sorted(self.list_elem, key=lambda x: len(raw(x.packet)), reverse=True)
+
                 if self.list_banner["list_banner6"].collidepoint(event.pos):
                     self.set_list_packets(self.screen_packets)
-                    # print(len(self.list_elem))
                     pass
                 if self.list_banner["list_banner7"].collidepoint(event.pos):
                     if self.indices["list"] > 0:
@@ -1181,6 +1210,7 @@ class GUIClass:
                     if elem.get_sprite_props()["sprite"].collidepoint(event.pos):
                         node_toggle = False
                         self.indices["list"] = 0
+                        self.indices["info"] = 0
                         self._reset_node_color(elem)
                         self._reset_conn_color("reset")
                         self.set_list_packets(elem.get_packet_list())
@@ -1194,6 +1224,7 @@ class GUIClass:
                     if node_toggle:
                         if is_point_on_line(elem.get_sprite_props()["s_sprite"], elem.get_sprite_props()["r_sprite"], event.pos):
                             self.indices["list"] = 0
+                            self.indices["info"] = 0
                             self._reset_conn_color(elem)
                             self._reset_node_color("reset")
                             self.set_list_packets(elem.get_packet_list())
@@ -1385,18 +1416,14 @@ class GUIClass:
         pass
 
     def _post_list_ele(self, elem):
-        # self.info_elem[""] =
         to_show = []
         pkt = elem.packet
         self.indices["info"] = 0
         # print(pkt.show())
         datetime_obj = datetime.fromtimestamp(float(pkt.time))
-        # df = len(raw(pkt))
-        # print(f"akjshdfkj {df}")
         ether_frame = {
             "hdr_type": "ether",
             "time": datetime_obj.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            # "length": "str(len(raw(pkt)))",
             "length": str(len(raw(pkt))),
             "src_mac": pkt.src,
             "dst_mac": pkt.dst
@@ -1428,6 +1455,189 @@ class GUIClass:
                 "hlim": str(pkt[IPv6].hlim),
             }
             to_show.append(ip6)
+            if pkt.haslayer(IPv6ExtHdrHopByHop):
+                ip6_hop = {
+                    "hdr_type": "ip6_hop",
+                    "nh": str(pkt[IPv6ExtHdrHopByHop].nh),
+                    "len": str(pkt[IPv6ExtHdrHopByHop].len),
+                    "options": pkt[IPv6ExtHdrHopByHop].options,
+                }
+                to_show.append(ip6_hop)
+            if pkt.haslayer(IPv6ExtHdrDestOpt):
+                ip6_dest_ops = {
+                    "hdr_type": "ip6_dest_ops",
+                    "nh": str(pkt[IPv6ExtHdrDestOpt].nh),
+                    "len": str(pkt[IPv6ExtHdrDestOpt].len),
+                    "options": pkt[IPv6ExtHdrDestOpt].options,
+                }
+                to_show.append(ip6_dest_ops)
+            if pkt.haslayer(IPv6ExtHdrRouting):
+                ip6_routing = {
+                    "hdr_type": "ip6_routing",
+                    "nh": str(pkt[IPv6ExtHdrRouting].nh),
+                    "len": str(pkt[IPv6ExtHdrRouting].len),
+                    "type": str(pkt[IPv6ExtHdrRouting].type),
+                    "segleft": str(pkt[IPv6ExtHdrRouting].segleft),
+                    "addr": str(pkt[IPv6ExtHdrRouting].addresses),
+                }
+                to_show.append(ip6_routing)
+            if pkt.haslayer(IPv6ExtHdrFragment):
+                ip6_fragment = {
+                    "hdr_type": "ip6_fragment",
+                    "nh": str(pkt[IPv6ExtHdrFragment].nh),
+                    "offset": str(pkt[IPv6ExtHdrFragment].offset),
+                    "m": str(pkt[IPv6ExtHdrFragment].m),
+                    "id": str(pkt[IPv6ExtHdrFragment].id),
+                }
+                to_show.append(ip6_fragment)
+            if pkt.haslayer(ICMPv6EchoRequest):
+                icmp6_echo_req = {
+                    "hdr_type": "icmp6_echo_req",
+                    "type": str(pkt[ICMPv6EchoRequest].type),
+                    "code": str(pkt[ICMPv6EchoRequest].code),
+                    "cksum": str(pkt[ICMPv6EchoRequest].cksum),
+                    "id": str(pkt[ICMPv6EchoRequest].id),
+                    "seq": str(pkt[ICMPv6EchoRequest].seq),
+                    "data": str(pkt[ICMPv6EchoRequest].data),
+                }
+                to_show.append(ip6_echo_req)
+            if pkt.haslayer(ICMPv6EchoReply):
+                icmp6_echo_rep = {
+                    "hdr_type": "icmp6_echo_rep",
+                    "type": str(pkt[ICMPv6EchoReply].type),
+                    "code": str(pkt[ICMPv6EchoReply].code),
+                    "cksum": str(pkt[ICMPv6EchoReply].cksum),
+                    "id": str(pkt[ICMPv6EchoReply].id),
+                    "seq": str(pkt[ICMPv6EchoReply].seq),
+                    "data": str(pkt[ICMPv6EchoReply].data),
+                }
+                to_show.append(ICMPv6EchoReply)
+            if pkt.haslayer(ICMPv6DestUnreach):
+                icmp6_dest_un = {
+                    "hdr_type": "icmp6_dest_un",
+                    "type": str(pkt[ICMPv6DestUnreach].type),
+                    "code": str(pkt[ICMPv6DestUnreach].code),
+                    "cksum": str(pkt[ICMPv6DestUnreach].cksum),
+                    "length": str(pkt[ICMPv6DestUnreach].length),
+                }
+                to_show.append(icmp6_dest_un)
+            if pkt.haslayer(ICMPv6PacketTooBig):
+                icmp6_too_big = {
+                    "hdr_type": "icmp6_too_big",
+                    "type": str(pkt[ICMPv6PacketTooBig].type),
+                    "code": str(pkt[ICMPv6PacketTooBig].code),
+                    "cksum": str(pkt[ICMPv6PacketTooBig].cksum),
+                    "mtu": str(pkt[ICMPv6PacketTooBig].mtu),
+                }
+                to_show.append(icmp6_too_big)
+            if pkt.haslayer(ICMPv6TimeExceeded):
+                icmp6_time_ex = {
+                    "hdr_type": "icmp6_time_ex",
+                    "type": str(pkt[ICMPv6TimeExceeded].type),
+                    "code": str(pkt[ICMPv6TimeExceeded].code),
+                    "cksum": str(pkt[ICMPv6TimeExceeded].cksum),
+                    "length": str(pkt[ICMPv6TimeExceeded].length),
+                }
+                to_show.append(icmp6_time_ex)
+            if pkt.haslayer(ICMPv6ParamProblem):
+                icmp6_param_prob = {
+                    "hdr_type": "icmp6_param_prob",
+                    "type": str(pkt[ICMPv6ParamProblem].type),
+                    "code": str(pkt[ICMPv6ParamProblem].code),
+                    "cksum": str(pkt[ICMPv6ParamProblem].cksum),
+                    "ptr": str(pkt[ICMPv6ParamProblem].ptr),
+                }
+                to_show.append(icmp6_param_prob)
+            if pkt.haslayer(ICMPv6NIQueryIPv4):
+                icmp6_ni_quer = {
+                    "hdr_type": "icmp6_ni_quer",
+                    "type": str(pkt[ICMPv6NIQueryIPv4].type),
+                    "code": str(pkt[ICMPv6NIQueryIPv4].code),
+                    "cksum": str(pkt[ICMPv6NIQueryIPv4].cksum),
+                    "qtype": str(pkt[ICMPv6NIQueryIPv4].qtype),
+                    "flags": str(pkt[ICMPv6NIQueryIPv4].flags),
+                    "data": str(pkt[ICMPv6NIQueryIPv4].data),
+                }
+                to_show.append(icmp6_ni_quer)
+            if pkt.haslayer(ICMPv6NIReplyIPv4):
+                icmp6_ni_rep = {
+                    "hdr_type": "icmp6_ni_rep",
+                    "type": str(pkt[ICMPv6NIReplyIPv4].type),
+                    "code": str(pkt[ICMPv6NIReplyIPv4].code),
+                    "cksum": str(pkt[ICMPv6NIReplyIPv4].cksum),
+                    "qtype": str(pkt[ICMPv6NIReplyIPv4].qtype),
+                    "flags": str(pkt[ICMPv6NIReplyIPv4].flags),
+                    "data": str(pkt[ICMPv6NIReplyIPv4].data),
+                }
+                to_show(icmp6_ni_rep)
+            if pkt.haslayer(ICMPv6ND_RS):
+                icmp6_nd_rs = {
+                    "hdr_type": "icmp6_nd_rs",
+                    "type": str(pkt[ICMPv6ND_RS].type),
+                    "code": str(pkt[ICMPv6ND_RS].code),
+                    "cksum": str(pkt[ICMPv6ND_RS].cksum),
+                    "res": str(pkt[ICMPv6ND_RS].res),
+                }
+                to_show.append(icmp6_nd_rs)
+            if pkt.haslayer(ICMPv6ND_RA):
+                icmp6_nd_ra = {
+                    "hdr_type": "icmp6_nd_ra",
+                    "type": str(pkt[ICMPv6ND_RA].type),
+                    "code": str(pkt[ICMPv6ND_RA].code),
+                    "cksum": str(pkt[ICMPv6ND_RA].cksum),
+                    "cglim": str(pkt[ICMPv6ND_RA].chlim),
+                    "M": str(pkt[ICMPv6ND_RA].M),
+                    "O": str(pkt[ICMPv6ND_RA].O),
+                    "H": str(pkt[ICMPv6ND_RA].H),
+                    "prf": str(pkt[ICMPv6ND_RA].prf),
+                    "P": str(pkt[ICMPv6ND_RA].P),
+                    "res": str(pkt[ICMPv6ND_RA].res),
+                    "routlt": str(pkt[ICMPv6ND_RA].routerlifetime),
+                    "retime": str(pkt[ICMPv6ND_RA].reachabletime),
+                    "rettimer": str(pkt[ICMPv6ND_RA].retranstimer),
+                }
+                to_show.append(icmp6_nd_ra)
+            if pkt.haslayer(ICMPv6ND_NS):
+                icmp6_nd_ns = {
+                    "hdr_type": "icmp6_nd_ns",
+                    "type": str(pkt[ICMPv6ND_NS].type),
+                    "code": str(pkt[ICMPv6ND_NS].code),
+                    "cksum": str(pkt[ICMPv6ND_NS].cksum),
+                    "res": str(pkt[ICMPv6ND_NS].res),
+                    "tgt": str(pkt[ICMPv6ND_NS].tgt),
+                }
+                to_show.append(icmp6_nd_ns)
+            if pkt.haslayer(ICMPv6ND_NA):
+                icmp6_nd_na = {
+                    "hdr_type": "icmp6_nd_na",
+                    "type": str(pkt[ICMPv6ND_NA].type),
+                    "code": str(pkt[ICMPv6ND_NA].code),
+                    "cksum": str(pkt[ICMPv6ND_NA].cksum),
+                    "R": str(pkt[ICMPv6ND_NA].R),
+                    "S": str(pkt[ICMPv6ND_NA].S),
+                    "O": str(pkt[ICMPv6ND_NA].O),
+                    "res": str(pkt[ICMPv6ND_NA].res),
+                    "tgt": str(pkt[ICMPv6ND_NA].tgt),
+                }
+                to_show.append(icmp6_nd_na)
+        if pkt.haslayer(AH):
+            auth = {
+                "hdr_type": "auth",
+                "nh": str(pkt[AH].nh),
+                "playlen": str(pkt[AH].payloadlen),
+                "spi": str(pkt[AH].spi),
+                "seq": str(pkt[AH].seq),
+                "icv": str(pkt[AH].icv),
+            }
+            to_show.append(auth)
+        if pkt.haslayer(ESP):
+            esp = {
+                "hdr_type": "esp",
+                "spi": str(pkt[ESP].spi),
+                "seq": str(pkt[ESP].seq),
+                "data": str(pkt[ESP].data),
+            }
+            to_show.append(esp)
         if pkt.haslayer(TCP):
             tcp = {
                 "hdr_type": "tcp",
@@ -1499,22 +1709,10 @@ class GUIClass:
             to_show.append(icmp)
             pass
 
-        # if pkt.haslayer(ICMPv6)
-        #     icmp6 = {
-        #         "hdr_type": "icmp6",
-        #         "type": str(pkt[ICMPv6].type),
-        #         "code": str(pkt[ICMPv6].code),
-        #         "check": str(pkt[ICMPv6].cksum),
-        #     }
-        #     to_show.append(icmp6)
-
         if IP in pkt and pkt[IP].proto == 2:
             print(pkt.show())
             igmp = {}
             igmp["hdr_type"] = "igmp"
-            # temp = str(pkt.getlayer(Raw).load)
-            # print(temp)
-
 
             if pkt.haslayer(IGMP):
                 print("Hey man its ok")
@@ -1529,19 +1727,6 @@ class GUIClass:
                 igmp["mrcode"] = str(pkt[IGMPv3].mrcode)
                 igmp["check"] = str(pkt[IGMPv3].chksum)
 
-            # ch1 = temp.split("\\")
-            # ttype = ch1[1].strip()
-            # ttype = pkt[IP].payload.type
-            # group = pkt[IP].payload.group
-            # igmp["type"] = ttype
-            # igmp["group"] = group
-            # if ttype in ["x11", "x12", "x16", "x17"]:
-            #     igmp["mrt"] = ch1[2].strip()
-            #     igmp["check"] = f"{ch1[3].replace('x', '').strip()}{ch1[4].replace('x', '').strip()}"
-            #     igmp["addr"] = f"{ch1[5].replace('x', '').strip()}.{ch1[5].replace('x', '').strip()}.{ch1[6].strip()}.{ch1[7].replace('x', '').strip()}"
-            # else:
-            #     # igmp["mrc"] =
-            #     pass
             to_show.append(igmp)
         if pkt.haslayer(ARP):
             arp = {
@@ -1558,7 +1743,6 @@ class GUIClass:
             }
             to_show.append(arp)
             pass
-
 
         if pkt.haslayer(TCP):
             if str(pkt[TCP].payload) != "Raw":
@@ -1799,6 +1983,18 @@ class GUIClass:
                     case "ip6":
                         depth = draw_ip6(self, hdr, depth)
                         pass
+                    case "ip6_hop":
+                        depth = draw_ip6_hop(self, hdr, depth)
+                        pass
+                    case "ip6_dest_ops":
+                        depth = draw_ip6_dest_ops(self, hdr, depth)
+                        pass
+                    case "ip6_routing":
+                        depth = draw_ip6_routing(self, hdr, depth)
+                        pass
+                    case "ip6_fragment":
+                        depth = draw_ip6_fragment(self, hdr, depth)
+                        pass
                     case "tcp":
                         depth = draw_tcp(self, hdr, depth)
                         pass
@@ -1809,8 +2005,43 @@ class GUIClass:
                         depth = draw_dns(self, hdr, depth)
                         pass
                     case "icmp":
-                        # will need to be built out to accoodate various types
                         depth = draw_icmp(self, hdr, depth)
+                        pass
+                    case "icmp6_echo_req":
+                        depth = draw_icmp6_echo_req(self, hdr, depth)
+                        pass
+                    case "icmp6_echo_rep":
+                        depth = draw_icmp6_echo_rep(self, hdr, depth)
+                        pass
+                    case "icmp6_dest_un":
+                        depth = draw_icmp6_dest_un(self, hdr, depth)
+                        pass
+                    case "icmp6_too_big":
+                        depth = draw_icmp6_too_big(self, hdr, depth)
+                        pass
+                    case "icmp6_time_ex":
+                        depth = draw_icmp6_time_ex(self, hdr, depth)
+                        pass
+                    case "icmp6_param_prob":
+                        depth = draw_icmp6_param_prob(self, hdr, depth)
+                        pass
+                    case "icmp6_ni_quer":
+                        depth = draw_icmp6_ni_quer(self, hdr, depth)
+                        pass
+                    case "icmp6_ni_rep":
+                        depth = draw_icmp6_ni_rep(self, hdr, depth)
+                        pass
+                    case "icmp6_nd_rs":
+                        depth = draw_icmp6_nd_rs(self, hdr, depth)
+                        pass
+                    case "icmp6_nd_ra":
+                        depth = draw_icmp6_nd_ra(self, hdr, depth)
+                        pass
+                    case "icmp6_nd_ns":
+                        depth = draw_icmp6_nd_ns(self, hdr, depth)
+                        pass
+                    case "icmp6_nd_na":
+                        depth = draw_icmp6_nd_na(self, hdr, depth)
                         pass
                     case "igmp":
                         depth = draw_igmp(self, hdr, depth)
@@ -1828,6 +2059,17 @@ class GUIClass:
                         depth = draw_conn(self, hdr, depth)
                     case "conn_traffic":
                         depth = draw_conn_traffic(self, hdr, depth)
+                    case "ipv6_routing":
+                        depth = draw_ipv6_routing(self, hdr, depth)
+                    case "ipv6_fragment":
+                        depth = draw_ipv6_fragment(self, hdr, depth)
+                        pass
+                    # case "esp":
+                    #     depth = draw_esp(self, hdr, depth)
+                    #     pass
+                    # case "auth":
+                    #     depth = draw_ah(self, hdr, depth)
+                    #     pass
 
     def _update_list(self):
         # 6 packets on panel
@@ -1915,19 +2157,19 @@ class GUIClass:
 
 
         pygame.draw.rect(self.screen, self.filter_elem["input_box_color"], self.filter_elem["input_box"], 1)
-        self.screen.blit(txt_surface, (self.filter_elem["input_box"].x + 5, self.filter_elem["input_box"].y + 5))
+        self.screen.blit(txt_surface, (self.filter_elem["input_box"].x + 5, self.filter_elem["input_box"].y + 3))
 
         pygame.draw.rect(self.screen, GRAY, self.filter_elem["enter_button"])
         self.screen.blit(self.filter_elem["enter_button_text"], (self.filter_elem["enter_button"].x + 13, self.filter_elem["enter_button"].y - 1))
 
         pygame.draw.rect(self.screen, GRAY, self.filter_elem["clear_button"])
-        self.screen.blit(self.filter_elem["clear_button_text"], (self.filter_elem["clear_button"].x + 14, self.filter_elem["clear_button"].y - 1))
+        self.screen.blit(self.filter_elem["clear_button_text"], (self.filter_elem["clear_button"].x + 14, self.filter_elem["clear_button"].y - 2))
 
         pygame.draw.rect(self.screen, GRAY, self.filter_elem["info_button"])
         self.screen.blit(self.filter_elem["info_button_text"], (self.filter_elem["info_button"].x + 14, self.filter_elem["info_button"].y + 5))
 
         pygame.draw.rect(self.screen, GRAY, self.filter_elem["help_button"])
-        self.screen.blit(self.filter_elem["help_button_text"], (self.filter_elem["help_button"].x + 14, self.filter_elem["help_button"].y + 1))
+        self.screen.blit(self.filter_elem["help_button_text"], (self.filter_elem["help_button"].x + 14, self.filter_elem["help_button"].y + 0))
         #--
 
         pygame.draw.rect(self.screen, self.filter_elem["toggle1_color"], self.filter_elem["toggle1"])
@@ -1973,7 +2215,7 @@ class GUIClass:
 
         pygame.draw.rect(self.screen, self.filter_elem["play3_color"], self.filter_elem["play3"])
         if self.filter_elem["play3_color"] == GRAY:
-            self.screen.blit(self.filter_elem["play3_text1"], (self.filter_elem["play3"].x + 18, self.filter_elem["play3"].y + 3))
+            self.screen.blit(self.filter_elem["play3_text1"], (self.filter_elem["play3"].x + 18, self.filter_elem["play3"].y + 2))
         else:
             self.screen.blit(self.filter_elem["play3_text2"], (self.filter_elem["play3"].x + 12, self.filter_elem["play3"].y + 2))
 
@@ -1982,7 +2224,7 @@ class GUIClass:
 
 
         pygame.draw.rect(self.screen, self.filter_elem["play5_color"], self.filter_elem["play5"])
-        self.screen.blit(self.filter_elem["play5_text"], (self.filter_elem["play5"].x + 10, self.filter_elem["play5"].y + 3))
+        self.screen.blit(self.filter_elem["play5_text"], (self.filter_elem["play5"].x + 15, self.filter_elem["play5"].y + 3))
 
 
         pygame.draw.rect(self.screen, self.filter_elem["play6_color"], self.filter_elem["play6"])
@@ -1996,17 +2238,17 @@ class GUIClass:
 
 
         pygame.draw.rect(self.screen, self.filter_elem["range_box_color"], self.filter_elem["range_box"], 1)
-        self.screen.blit(rng_surface, (self.filter_elem["range_box"].x + 5, self.filter_elem["range_box"].y + 5))
+        self.screen.blit(rng_surface, (self.filter_elem["range_box"].x + 5, self.filter_elem["range_box"].y + 3))
         self.screen.blit(self.filter_elem["range_banner"], (self.filter_elem["range_box"].x - 110, self.filter_elem["range_box"].y + 7))
 
 
         pygame.draw.rect(self.screen, self.filter_elem["upper_box_color"], self.filter_elem["upper_box"], 1)
-        self.screen.blit(grt_surface, (self.filter_elem["upper_box"].x + 5, self.filter_elem["upper_box"].y + 5))
+        self.screen.blit(grt_surface, (self.filter_elem["upper_box"].x + 5, self.filter_elem["upper_box"].y + 3))
         self.screen.blit(self.filter_elem["upper_banner"], (self.filter_elem["upper_box"].x - 110, self.filter_elem["upper_box"].y + 7))
 
 
         pygame.draw.rect(self.screen, self.filter_elem["lower_box_color"], self.filter_elem["lower_box"], 1)
-        self.screen.blit(lst_surface, (self.filter_elem["lower_box"].x + 5, self.filter_elem["lower_box"].y + 5))
+        self.screen.blit(lst_surface, (self.filter_elem["lower_box"].x + 5, self.filter_elem["lower_box"].y + 3))
         self.screen.blit(self.filter_elem["lower_banner"], (self.filter_elem["lower_box"].x - 110, self.filter_elem["lower_box"].y + 7))
 
 
@@ -2025,7 +2267,6 @@ class GUIClass:
 
         pygame.draw.rect(self.screen, GRAY, self.list_banner["list_banner5"])
         self.screen.blit(self.list_banner["list_banner5_text"], (self.list_banner["list_banner5"].x + 15, self.list_banner["list_banner5"].y + 3))
-
 
         pygame.draw.rect(self.screen, GRAY, self.list_banner["list_banner6"])
         self.screen.blit(self.list_banner["list_banner6_text"], (self.list_banner["list_banner6"].x + 10, self.list_banner["list_banner6"].y + 3))
