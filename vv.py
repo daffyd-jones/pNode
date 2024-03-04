@@ -6,7 +6,9 @@ def random_ip():
     return ".".join(str(randint(0, 255)) for _ in range(4))
 
 # Generate a list of random IP addresses
-ip_addresses = [random_ip() for _ in range(10)]
+# ip_addresses = [random_ip() for _ in range(10)]
+ip_addresses = ['192.168.1.2', '10.0.0.2', '192.168.1.1', '10.0.0.1']
+
 
 # Define a variety of ports for different services
 ports = [20, 21, 22, 23, 25, 53, 80, 110, 443, 8080]

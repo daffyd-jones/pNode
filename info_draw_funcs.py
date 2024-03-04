@@ -1242,10 +1242,10 @@ def draw_icmp6_ni_rep(slf, hdr, depth):
     pass
 
 def draw_icmp6_nd_rs(slf, hdr, depth):
-    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
+    tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 150)
     pygame.draw.rect(slf.screen, WHITE, tile)
     #
-    depth += 305
+    depth += 155
     #
     time_surface = slf.tings["font2"].render("- ICMPv6 Router Solicitation -", True, BLACK)
     slf.screen.blit(time_surface, (tile.x + 5, tile.y + 5))

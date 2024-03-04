@@ -16,6 +16,8 @@ def reset(self, _fs):
     return True
     pass
 def resend(self, _fs):
+    if self.play != False:
+        self.GUI.step_through(self.step_position, self.step_range, self.Scapy.get_filtered_packets())
     return True
     pass
 def prot(self, prot):
@@ -132,7 +134,7 @@ class GameLoop:
         run = True
         while run:
             if c == 100:
-                c = 0
+                c = -1
             c += 1
             res = self.GUI.input_check()
             # print(self.Scapy.filtered_packet_list)
@@ -154,7 +156,7 @@ class GameLoop:
                 if self.step_position == (len(temp) - self.step_range):
                     self.play = None
                     continue
-                print(f"[// step_pos: {self.step_position} | step_rate: {self.step_rate} | listlen: {len(temp)}")
+                print(f"[// step_pos: {self.step_position} | step_rate: {self.step_rate} | step_range {self.step_range} | listlen: {len(temp)}")
                 self.GUI.step_through(self.step_position, self.step_range, self.Scapy.get_filtered_packets())
                 self.step_position += 1
             if self.play != False:

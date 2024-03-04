@@ -85,15 +85,11 @@ def create_connection_rect(color, node1, node2, width):
     dy = node2[1] - node1[1]
     length = math.sqrt(dx**2 + dy**2)
 
-    # Adjust the angle calculation
     angle = math.degrees(math.atan2(dy, dx))
-
     rect_surface = pygame.Surface((length, width), pygame.SRCALPHA)
     rect_surface.fill(color)
-
     rotated_surface = pygame.transform.rotate(rect_surface, -angle)
 
-    # Adjust the position calculation
     if dx >= 0:
         center_x = node1[0] + dx / 2
         center_y = node1[1] + dy / 2
@@ -102,7 +98,6 @@ def create_connection_rect(color, node1, node2, width):
         center_y = node2[1] - dy / 2
 
     collision_rect = rotated_surface.get_rect(center=(center_x, center_y))
-
     return rotated_surface, collision_rect
 
 def is_point_on_line(surface, rect, point):
@@ -175,7 +170,7 @@ def build_filter_elem(panels, font1, font2):
     flt_ele["toggle6_color"] = GRAY
 
     flt_ele["toggle7"] = pygame.Rect(panels['bottom_right'].x + 130, panels['bottom_right'].y + 56, 22, 22)
-    flt_ele["toggle7_text"] = font2.render('HTTP', True, BLACK)
+    flt_ele["toggle7_text"] = font2.render('HTTP/S', True, BLACK)
     flt_ele["toggle7_color"] = GRAY
 
     flt_ele["toggle8"] = pygame.Rect(panels['bottom_right'].x + 130, panels['bottom_right'].y + 96, 22, 22)
@@ -261,7 +256,6 @@ def build_filter_elem(panels, font1, font2):
     flt_ele["range_box_active"] = False
 
     return flt_ele
-    pass
 
 class GUIClass:
     def __init__(self):
@@ -481,7 +475,6 @@ class GUIClass:
         self.list_banner = list_ele
         self.map_ctl = map_ctl
         self.help_win = help_win
-        self.graph = None
         self.graph_pos = None
         self.screen_packets = None
         self.in_info = None
@@ -491,7 +484,6 @@ class GUIClass:
         self.if_list = []
         self.if_panels = []
         self.screen_keys = []
-        self.ttime = 0
         self.list_off = 0
         self.scroll_step = 5
         self.f_len = 0
@@ -504,6 +496,7 @@ class GUIClass:
         self.helpp = False
         self.new_map = True
         self.map_adj = False
+        self.in_err = False
         self.list_bools = {
             "time": False,
             "src": False,
@@ -591,7 +584,6 @@ class GUIClass:
         temp = {}
         for k, n in nodes.items():
             if (len(n.get_packet_list()) < self.min or len(n.get_packet_list()) > self.max):
-                print(f"min {self.min} max {self.max} len: {len(n.get_packet_list())}")
                 continue
             temp[k] = n
 
@@ -630,7 +622,7 @@ class GUIClass:
         if lres == False:
             self.load_elem["error_text"] = self.tings["font1"].render("That is not a valid path", True, BLACK)
 
-        self.screen.blit(self.load_elem["error_text"], (230, 140))
+        self.screen.blit(self.load_elem["error_text"], (130, 140))
 
 
         temp =  self.load_elem["input_text"]
@@ -669,7 +661,6 @@ class GUIClass:
             buf += 45
         pygame.display.flip()
 
-        pass
 
     def load_input(self):
         for event in pygame.event.get():
@@ -738,12 +729,9 @@ class GUIClass:
                         if self.load_elem["amt_text"].isnumeric():
                             return ("sniff", self.if_list[idx], self.load_elem["amt_text"])
                         else:
-                            self.load_elem["error_text"] = self.tings["font1"].render("Sniff amt must be #", True, BLACK)
+                            self.load_elem["error_text"] = self.tings["font1"].render("   Sniff amt must be #", True, BLACK)
                             self.load_elem["input_text"] = ""
                         pass
-
-
-
 
 
     def _check_filter_keydown(self, event, elem, action, textt, leng, idx):
@@ -842,7 +830,13 @@ class GUIClass:
                     if temp[1] == "":
                         self.max = DEFAULT_MAX
                     else:
-                        self.max = int(temp[1])
+                        try:
+                            self.max = int(temp[1])
+                            self.new_map = True
+                            return (Action.RESEND, "")
+                        except ValueError as _:
+                            self.in_err = True
+                            self.max = DEFAULT_MAX
                     self.new_map = True
                     return (Action.RESEND, "")
                 temp = self._check_filter_keydown(event, "lower_box_active", Action.MIN, "lower_text", 4, "lower")
@@ -850,7 +844,13 @@ class GUIClass:
                     if temp[1] == "":
                         self.min = 0
                     else:
-                        self.min = int(temp[1])
+                        try:
+                            self.min = int(temp[1])
+                            self.new_map = True
+                            return (Action.RESEND, "")
+                        except ValueError as _:
+                            self.in_err = True
+                            self.min = 0
                     self.new_map = True
                     return (Action.RESEND, "")
 
@@ -1157,7 +1157,6 @@ class GUIClass:
 
 
                 if self.map_ctl["rep_const_up"].collidepoint(event.pos):
-                    self.new_map = True
                     self.map_adj = True
                     self.indices["rep_const"] = round(self.indices["rep_const"] + .1, 1)
                     return (Action.RESEND, "")
@@ -1165,14 +1164,12 @@ class GUIClass:
 
                 if self.map_ctl["rep_const_dw"].collidepoint(event.pos):
                     if self.indices["rep_const"] > 0.1:
-                        self.new_map = True
                         self.map_adj = True
                         self.indices["rep_const"] = round(self.indices["rep_const"] - .1, 1)
                         return (Action.RESEND, "")
                     pass
 
                 if self.map_ctl["att_const_up"].collidepoint(event.pos):
-                    self.new_map = True
                     self.map_adj = True
                     self.indices["att_const"] = round(self.indices["att_const"] + .1, 1)
                     return (Action.RESEND, "")
@@ -1182,14 +1179,12 @@ class GUIClass:
                 if self.map_ctl["att_const_dw"].collidepoint(event.pos):
                     if self.indices["att_const"] > 0.1:
                         self.indices["att_const"] = round(self.indices["att_const"] - .1, 1)
-                        self.new_map = True
                         self.map_adj = True
                         return (Action.RESEND, "")
                     pass
 
                 if self.map_ctl["glob_const_up"].collidepoint(event.pos):
                     self.indices["glob_const"] = round(self.indices["glob_const"] + .1, 1)
-                    self.new_map = True
                     self.map_adj = True
                     return (Action.RESEND, "")
                     pass
@@ -1197,7 +1192,6 @@ class GUIClass:
                 if self.map_ctl["glob_const_dw"].collidepoint(event.pos):
                     if self.indices["glob_const"] > 0.1:
                         self.indices["glob_const"] = round(self.indices["glob_const"] - .1, 1)
-                        self.new_map = True
                         self.map_adj = True
                         return (Action.RESEND, "")
                     pass
@@ -1784,7 +1778,8 @@ class GUIClass:
         # nodes = self.node_elem
         positions = {}
         pos = None
-        if self.new_map and (sorted(node_list) != sorted(self.screen_keys) or self.map_adj):
+        if (self.new_map and sorted(node_list) != sorted(self.screen_keys)) or self.map_adj:
+            print("go fuk yurself")
             self.screen_keys = node_list
             self.new_map = False
             self.map_adj = False
@@ -1856,16 +1851,9 @@ class GUIClass:
         if ac_bool == False:
             print("heyyy")
             pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box1"])
-            display_surface = self.tings["font2"].render("That is not a correct filter option", True, BLACK)
+            display_surface = self.tings["font2"].render("That is not a correct input option", True, BLACK)
             self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 250))
 
-            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box2"])
-            # display_surface = self.tings["font2"].render(self.info_elem["display_text2"], True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box2"].x + 5, self.info_elem["display_box2"].y + 5))
-            #
-            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box3"])
-            # display_surface = self.tings["font2"].render("That is not a correct filter option", True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box3"].x + 100, self.info_elem["display_box3"].y + 50))
             return None
 
 
@@ -1939,35 +1927,13 @@ class GUIClass:
             dst_surface = self.tings["font2"].render(">", True, BLACK)
             self.screen.blit(dst_surface, (self.info_elem["info_fwd_button"].x + 10, self.info_elem["info_fwd_button"].y + 2))
 
-
             depth = 0
-
             chk = 12
-
             for i in range(self.indices["info_page"] * chk, self.indices["info_page"] * chk + chk):
                 display_surface = self.tings["font2"].render(filt_parameters[i], True, BLACK)
                 self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 85, self.info_elem["display_box1"].y + 255 + depth))
                 depth += 15
 
-
-
-            # display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 5))
-            #
-            # display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 5))
-            #
-            # display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 5))
-
-            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box2"])
-            # display_surface = self.tings["font2"].render(self.info_elem["display_text2"], True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box2"].x + 5, self.info_elem["display_box2"].y + 5))
-            #
-            #
-            # pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box3"])
-            # display_surface = self.tings["font2"].render(self.info_elem["display_text3"], True, BLACK)
-            # self.screen.blit(display_surface, (self.info_elem["display_box3"].x + 5, self.info_elem["display_box3"].y + 5))
         else:
             # is_raw
             depth = 0
@@ -2106,9 +2072,10 @@ class GUIClass:
         pass
 
     def update_screen(self, ac_bool):
-        if ac_bool == False:
-            print("Fuck you")
-            # self.screen.blit(self.tings["font2"].render("", True, BLACK), (self.panels[""], y))
+
+        if self.in_err:
+            self.in_err = False
+            ac_bool = False
 
         input_txt = self.filter_elem["input_text"]
         temp = input_txt

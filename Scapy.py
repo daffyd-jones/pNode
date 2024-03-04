@@ -1,5 +1,6 @@
 from scapy.all import *
 from scapy.all import IP, TCP, UDP, ARP, DNS, Ether
+from scapy.layers.inet6 import ICMPv6EchoRequest, ICMPv6EchoReply, ICMPv6ND_NS, ICMPv6ND_NA, ICMPv6NDOptSrcLLAddr, ICMPv6NDOptDstLLAddr, ICMPv6NDOptMTU, ICMPv6NDOptPrefixInfo
 from datetime import datetime
 
 def protocol(self, type):
@@ -15,11 +16,13 @@ def protocol(self, type):
         case "UDP":
             return [pkt for pkt in self.filtered_packets if UDP in pkt]
         case "HTTP":
-            return [pkt for pkt in self.filtered_packets if TCP in pkt and (pkt[TCP].dport == 80 or (pkt.haslayer(Raw) and "HTTP" in str(pkt[Raw].load)))]
+            return [pkt for pkt in self.filtered_packets if TCP in pkt and ((pkt[TCP].dport == 80 or pkt[TCP].sport == 80) or (pkt.haslayer(Raw) and "HTTP" in str(pkt[Raw].load)) or (pkt[TCP].dport == 443 or pkt[TCP].sport == 443))]
         case "SSH":
             return [pkt for pkt in self.filtered_packets if TCP in pkt and (pkt[TCP].dport == 22 or pkt[TCP].sport == 22)]
+        # case "ICMP":
+        #     return [pkt for pkt in self.filtered_packets if ICMP in pkt]
         case "ICMP":
-            return [pkt for pkt in self.filtered_packets if ICMP in pkt]
+            return [pkt for pkt in self.filtered_packets if ICMP in pkt or ICMPv6EchoRequest in pkt or ICMPv6EchoReply in pkt or ICMPv6ND_NS in pkt or ICMPv6ND_NA in pkt or ICMPv6NDOptSrcLLAddr in pkt or ICMPv6NDOptDstLLAddr in pkt or ICMPv6NDOptMTU in pkt or ICMPv6NDOptPrefixInfo in pkt]
         case "IGMP":
             return [pkt for pkt in self.filtered_packets if IP in pkt and pkt[IP].proto == 2]
 
@@ -51,7 +54,7 @@ class ScapyClass:
             "http_uri": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(HTTP) and pkt[HTTP].Uri == x],
             "port": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and (pkt[TCP].sport == int(x) or pkt[TCP].dport == int(x)) or pkt.haslayer(UDP) and (pkt[UDP].sport == int(x) or pkt[UDP].dport == int(x))],
             "sport": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].sport == int(x) or pkt.haslayer(UDP) and pkt[UDP].sport == int(x)],
-            "dport": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].dport == int(x) or pkt.haslayer(UDP) and pkt[UDP].sport == int(x)],
+            "dport": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].dport == int(x) or pkt.haslayer(UDP) and pkt[UDP].dport == int(x)],
             "prot": lambda x: protocol(self, x),
             "flags": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].flags == x or pkt.haslayer(UDP) and pkt[UDP].flags == x],
         }
@@ -104,10 +107,6 @@ class ScapyClass:
 
 
     def filter_packets(self, filter_string):
-        #filter packets based on string with filter requirements
-        #"src_ip=x.x.x.x sport=6666 prot=TCP"
-
-        # test = "src_ip=127.0.0.1 sport=6666 prot=TCP"
         parts = filter_string.split(" ")
         for part in parts:
             temp = part.split("=")
@@ -120,9 +119,7 @@ class ScapyClass:
                 print("filter failed")
                 return False
         return True
-        # for p in self.filtered_packets:
-            # print(p.summary())
-        pass
+
 
     def sniff(self, args):
         try:
