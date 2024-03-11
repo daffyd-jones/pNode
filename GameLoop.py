@@ -39,7 +39,6 @@ def play(self, res):
 
 def pause(self, res):
     self.play = None
-    print("pause")
     return True
 
 def stop(self, res):
@@ -82,19 +81,17 @@ def prange(self, res):
 def spdup(self, res):
     if self.step_rate > 1:
         self.step_rate -= 1
-    pass
+
 
 def spddw(self, res):
     self.step_rate += 1
-    pass
+
 
 def playmove(self, res):
     if self.step_position < (len(self.Scapy.get_filtered_packets()) - self.step_range) and self.play != False:
         self.step_position = int(res[1])
         self.GUI.step_through(self.step_position, self.step_range, self.Scapy.get_filtered_packets())
     return True
-
-    pass
 
 
 gui_actions = {

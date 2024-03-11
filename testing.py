@@ -8,7 +8,9 @@ from scapy.all import IP, TCP, UDP, ARP, DNS, ICMP, SNMP, DHCP, BOOTP, L2TP, PPP
 from scapy.layers.l2 import Ether
 
 from Scapy import ScapyClass as Scapy
-
+from GUI import GUIClass as GUI
+from GameLoop import GameLoop, sfilter, reset, resend, prot, play, pause, stop, beg, end, rev, fwd, prange, spdup, spddw, playmove
+from Actions import Action
 
 
 class Test_Scapy(unittest.TestCase):
@@ -347,12 +349,16 @@ class Test_GameLoop(unittest.TestCase):
             if temp.haslayer(TCP):
                 packet = temp
                 break
-        gl.sfilter(f"src_ip={packet[TCP].src} port={packet[TCP].sport}")
+        sfilter(gl, ("", f"ip={packet[IP].src} sport={packet[TCP].sport}"))
         fp = gl.Scapy.filtered_packets
         check = True
         for i in fp:
-            if i[TCP].src != packet[TCP].src or i[TCP].src != packet[TCP]src:
-                check = False
+            if i.haslayer(TCP):
+                if i[IP].src != packet[IP].src or i[TCP].sport != packet[TCP].sport:
+                    check = False
+            elif i.haslayer(UDP):
+                if i[IP].src != packet[IP].src or i[UDP].sport != packet[UDP].sport:
+                    check = False
         self.assertTrue(check, "Checking that list is filtered filter input from GameLoop")
 
     def test_reset(self):
@@ -365,14 +371,14 @@ class Test_GameLoop(unittest.TestCase):
             if temp.haslayer(TCP):
                 packet = temp
                 break
-        gl.sfilter(f"src_ip={packet[TCP].src}")
+        sfilter(gl, ("", f"src_ip={packet[IP].src}"))
         check = True
         fp = gl.Scapy.filtered_packets
         for i in fp:
-            if i[TCP].src != packet[TCP].src:
+            if i[IP].src != packet[IP].src:
                 check = False
         self.assertTrue(check, "Checking that list is different from packet_list")
-        gl.reset()
+        reset(gl, "")
         check = False
         if gl.Scapy.packet_list == gl.Scapy.filtered_packets:
             check = True
@@ -384,14 +390,154 @@ class Test_GameLoop(unittest.TestCase):
         gl.Scapy.reset_packets()
         gl.play = True
         gl.step_range = 5
-        gl.resend()
-
+        resend(gl, "")
         sp = gl.GUI.screen_packets
         temp = gl.Scapy.filtered_packets[0:0+5]
-        self.assertEqual(sp, temp, "Check to see if the resend function assigns to 'screen_packets'")
+        self.assertCountEqual(sp, temp, "Check to see if the resend function assigns to 'screen_packets'")
+
+    def test_prot(self):
+        gl = GameLoop()
+        gl.Scapy.packet_list = self.packets
+        gl.Scapy.reset_packets()
+        prot(gl, ("", "T", "UDP"))
+        check = True
+        for i in gl.Scapy.filtered_packets:
+            if not i.haslayer(UDP):
+                check = False
+        self.assertTrue(check)
+        prot(gl, ("", "F", "UDP"))
+        self.assertEqual(gl.Scapy.packet_list, gl.Scapy.filtered_packets)
+
+    def test_play(self):
+        gl = GameLoop()
+        play(gl, ("", 20))
+        self.assertTrue(gl.play)
+        self.assertEqual(gl.step_range, 20)
+
+    def test_pause(self):
+        gl = GameLoop()
+        play(gl, ("", 20))
+        self.assertTrue(gl.play)
+        self.assertEqual(gl.step_range, 20)
+        pause(gl, (""))
+        self.assertEqual(gl.play, None)
+
+    def test_stop(self):
+        gl = GameLoop()
+        play(gl, ("", 20))
+        gl.step_position = 20
+        stop(gl, (""))
+        self.assertEqual(gl.step_position, 0)
+        self.assertTrue(gl.ch)
+        self.assertFalse(gl.play)
+
+    def test_beg(self):
+        gl = GameLoop()
+        gl.Scapy.packet_list = self.packets
+        gl.Scapy.reset_packets()
+        gl.step_position = 10
+        gl.step_range = 10
+        beg(gl, (""))
+        self.assertEqual(gl.step_position, 0)
+        temp = gl.GUI.screen_packets
+        temp2 = gl.Scapy.filtered_packets[0: 0 + 10]
+        self.assertCountEqual(temp, temp2)
+
+    # def test_end(self):
+    #     pass
+
+    def test_rev(self):
+        gl = GameLoop()
+        gl.Scapy.packet_list = self.packets
+        gl.Scapy.reset_packets()
+        gl.step_position = 10
+        gl.step_range = 10
+        rev(gl, (""))
+        self.assertEqual(gl.step_position, 9)
+        temp = gl.GUI.screen_packets
+        temp2 = gl.Scapy.filtered_packets[9: 9 + 10]
+        self.assertCountEqual(temp, temp2)
+
+    def test_fwd(self):
+        gl = GameLoop()
+        gl.Scapy.packet_list = self.packets
+        gl.Scapy.reset_packets()
+        gl.step_position = 10
+        gl.step_range = 10
+        fwd(gl, (""))
+        self.assertEqual(gl.step_position, 11)
+        temp = gl.GUI.screen_packets
+        temp2 = gl.Scapy.filtered_packets[11: 11 + 10]
+        self.assertCountEqual(temp, temp2)
+
+    def test_prange(self):
+        gl = GameLoop()
+        gl.Scapy.packet_list = self.packets
+        gl.Scapy.reset_packets()
+        gl.step_position = 10
+        prange(gl, ("", 30))
+        self.assertEqual(gl.step_range, 30)
+        temp = gl.GUI.screen_packets
+        temp2 = gl.Scapy.filtered_packets[10: 10 + 30]
+        self.assertCountEqual(temp, temp2)
+
+        gl.Scapy.reset_packets()
+        gl.step_position = 10
+        prange(gl, ("", ""))
+        self.assertEqual(gl.step_range, 6)
+        temp = gl.GUI.screen_packets
+        temp2 = gl.Scapy.filtered_packets[10: 10 + 6]
+        self.assertCountEqual(temp, temp2)
+
+    def test_spdup(self):
+        gl = GameLoop()
+        gl.step_rate = 10
+        pre = gl.step_rate
+        spdup(gl, "")
+        self.assertEqual(pre - 1, gl.step_rate)
+
+    def test_spddw(self):
+        gl = GameLoop()
+        gl.step_rate = 10
+        pre = gl.step_rate
+        spddw(gl, "")
+        self.assertEqual(pre + 1, gl.step_rate)
+
+    def test_playmove(self):
+        gl = GameLoop()
+        gl.Scapy.packet_list = self.packets
+        gl.Scapy.reset_packets()
+        gl.step_position = 10
+        gl.step_range = 10
+        gl.play = True
+        playmove(gl, ("", 30))
+        self.assertEqual(gl.step_position, 30)
+        self.assertCountEqual(gl.GUI.screen_packets, gl.Scapy.filtered_packets[30:30 + 10])
+
+
+class Test_GameLoop(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.scapy = Scapy()
+        resp = cls.scapy.load_pcap("test.pcap")
+        cls.packets = cls.scapy.packet_list
+
+    def test_set_packets(self):
+        gui = GUI()
+        gui.set_packets(self.packets)
+        self.assertCountEqual(gui.screen_packets, self.packets)
+        self.assertEqual(len(gui.list_elem), len(self.packets))
+        self.assertTrue(gui.new_map)
+
+    def test_set_list_packets(self):
+        gui = GUI()
+        gui.set_list_packets(self.packets)
+        self.assertEqual(len(gui.list_elem), len(self.packets))
 
 
 
+    pass
 
 
 
