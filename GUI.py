@@ -191,11 +191,6 @@ def build_filter_elem(panels, font1, font2):
     flt_ele["play_buf_1_active"] = False
     flt_ele["play_buf_1_color"] = GRAY
 
-    # flt_ele["play_buf_2"] = pygame.Rect(panels['bottom_right'].x + 140, panels['bottom_right'].y + 180, 4, 8)
-    # flt_ele["play_buf_2_active"] = False
-    # flt_ele["play_buf_2_color"] = GRAY
-
-
     flt_ele["play1"] = pygame.Rect(panels['bottom_right'].x + 8, panels['bottom_right'].y + 202, 48, 30)
     flt_ele["play1_text"] = font1.render('|<', True, BLACK)
     flt_ele["play1_active"] = False
@@ -269,7 +264,7 @@ class GUIClass:
         # font1 = pygame.font.Font(None, 30)
         # font2 = pygame.font.Font(None, 20)
 
-        font_path = "/home/daffyd/Desktop/skoo/proj/aaaaaa/fonts/FiraCode-SemiBold.ttf"
+        font_path = "fonts/FiraCode-SemiBold.ttf"
 
         font1 = pygame.font.Font(font_path, 20)
         font2 = pygame.font.Font(font_path, 12)
@@ -278,6 +273,20 @@ class GUIClass:
         tings = {}
         tings["font1"] = font1
         tings["font2"] = font2
+        tings["list_off"] = 0
+        tings["scroll_step"] = 5
+        tings["f_len"] = 0
+        tings["play_drag"] = False
+        tings["play_off"] = 0
+        tings["play_step"] = 0
+        tings["min"] = 0
+        tings["max"] = DEFAULT_MAX
+        tings["ascii_hex"] = False
+        tings["help"] = False
+        tings["new_map"] = True
+        tings["map_adj"] = False
+        tings["in_err"] = False
+
 
 
         load_ele = {}
@@ -346,9 +355,6 @@ class GUIClass:
         list_ele["list_banner8_text"] = font2.render('\u2193', True, BLACK)
 
         list_ele["list_scroll"] = pygame.Rect(panels['bottom_left'].x + 813, panels['bottom_left'].y + 55, 30, 20)
-        # list_ele["list_banner9_text"] = font2.render('\u2193', True, BLACK)
-
-
 
         #---info
         info_ele = {}
@@ -458,14 +464,6 @@ class GUIClass:
         help_win["8_text_2_2"] = font2.render('used to step through the pcap. The arrow', True, BLACK)
         help_win["8_text_2_3"] = font2.render('buttons in the corner control play speed.', True, BLACK)
 
-
-        # help_win["header"] = font1.render('~~Help~~', True, BLACK)
-        # help_win["para"] = font2.render('Below is a brief description of the purpose of the quadrants and their main functions. \
-        #                         To the right is a complete list of the fields that can be used to filter packets.', True, BLACK)
-        # help_win[""]
-
-
-
         self.screen = screen
         self.panels = panels
         self.tings = tings
@@ -484,19 +482,6 @@ class GUIClass:
         self.if_list = []
         self.if_panels = []
         self.screen_keys = []
-        self.list_off = 0
-        self.scroll_step = 5
-        self.f_len = 0
-        self.play_drag = False
-        self.play_off = 0
-        self.play_step = 0
-        self.min = 0
-        self.max = DEFAULT_MAX
-        self.ascii_hex = False
-        self.helpp = False
-        self.new_map = True
-        self.map_adj = False
-        self.in_err = False
         self.list_bools = {
             "time": False,
             "src": False,
@@ -525,7 +510,6 @@ class GUIClass:
             "play": 0,
         }
 
-
     def set_packets(self, packets):
         self.list_elem.clear()
         self.screen_packets = packets
@@ -542,15 +526,12 @@ class GUIClass:
 
         self._init_node_elem()
         self._init_conn_elem()
-        self.new_map = True
-
+        self.tings["new_map"] = True
 
     def set_list_packets(self, packets):
         self.list_elem.clear()
-        # self.screen_packets = packets
 
         for packet in packets:
-            # l_ele = pygame.Rect(self.panels['bottom_left'].x + 5, self.panels['bottom_right'].y + 25, 40, 24)
             l_class = PLObj()
 
             l_class.sprite_props["sprite"] = pygame.Rect(self.panels['bottom_left'].x + 5, self.panels['bottom_left'].y + 30, 803, 30)
@@ -558,8 +539,6 @@ class GUIClass:
 
             l_class.packet = packet
             self.list_elem.append(l_class)
-
-
 
     def _init_node_elem(self):
         pkts = self.screen_packets
@@ -583,12 +562,9 @@ class GUIClass:
 
         temp = {}
         for k, n in nodes.items():
-            if (len(n.get_packet_list()) < self.min or len(n.get_packet_list()) > self.max):
+            if (len(n.get_packet_list()) < self.tings["min"] or len(n.get_packet_list()) > self.tings["max"]):
                 continue
             temp[k] = n
-
-        # print(f"fuck {temp}")
-
         self.node_elem = temp
 
     def _init_conn_elem(self):
@@ -609,9 +585,7 @@ class GUIClass:
 
         self.conn_elem = conns
 
-
     def load_screen(self, lres):
-
         self.screen.fill(WHITE)
         pygame.draw.rect(self.screen, YELLOW, (40, 40, 1200, 310))
         pygame.draw.rect(self.screen, YELLOW, (40, 370, 1200, 310))
@@ -623,7 +597,6 @@ class GUIClass:
             self.load_elem["error_text"] = self.tings["font1"].render("That is not a valid path", True, BLACK)
 
         self.screen.blit(self.load_elem["error_text"], (130, 140))
-
 
         temp =  self.load_elem["input_text"]
         if len(temp) > 15:
@@ -647,12 +620,10 @@ class GUIClass:
         pygame.draw.rect(self.screen, self.load_elem["if_dw_color"], self.load_elem["if_dw"])
         self.screen.blit(self.load_elem["if_dw_text"], (self.load_elem["if_dw"].x + 10, self.load_elem["if_dw"].y + 2))
 
-
         ifs = get_if_list()
         self.if_list = ifs
         buf = 0
         for f in ifs[self.indices["load_if"]:self.indices["load_if"] + 5]:
-            # self.load_elem["if_temp"].y + buf
             temp = pygame.Rect(472, 435 + buf, 300, 40)
             pygame.draw.rect(self.screen, GRAY, temp)
             ld_surface = self.tings["font1"].render(f, True, BLACK)
@@ -660,7 +631,6 @@ class GUIClass:
             self.if_panels.append(temp)
             buf += 45
         pygame.display.flip()
-
 
     def load_input(self):
         for event in pygame.event.get():
@@ -670,8 +640,6 @@ class GUIClass:
             if event.type == SNIFFING_DONE:
                 return ("dsniff", "")
             if event.type == pygame.KEYDOWN:
-                # print("heyasdasd")
-                # print(self.load_elem["input_text"])
                 if self.load_elem["input_box_active"]:
                     if event.key == pygame.K_RETURN:
                         if self.load_elem["input_text"].endswith(".pcap"):
@@ -680,7 +648,6 @@ class GUIClass:
                             self.load_elem["error_text"] = self.tings["font1"].render("That is not a valid path", True, BLACK)
                             self.load_elem["input_text"] = ""
                         pass
-                        # self.info_elem["display_text"] = self.load_elem["input_text"]
                     elif event.key == pygame.K_BACKSPACE:
                         self.load_elem["input_text"] = self.load_elem["input_text"][:-1]
                         if len(self.load_elem["input_text"]) > 15:
@@ -733,14 +700,12 @@ class GUIClass:
                             self.load_elem["input_text"] = ""
                         pass
 
-
     def _check_filter_keydown(self, event, elem, action, textt, leng, idx):
         print(f"hey 0 {elem} {self.filter_elem[elem]}")
         if self.filter_elem[elem]:
             print("hey 1")
             if event.key == pygame.K_RETURN:
                 print("hey 2")
-                # self.info_elem["display_text"] = self.filter_elem["input_text"]
                 return (action, self.filter_elem[textt], "")
             elif event.key == pygame.K_BACKSPACE:
                 print("hey 2")
@@ -752,7 +717,6 @@ class GUIClass:
                 self.filter_elem[textt] += event.unicode
                 if len(self.filter_elem[textt]) > leng:
                     self.indices[idx] += 1
-
 
     def _check_scroll(self, event, panel, idx, len_chk, leng):
         if self.panels[panel].collidepoint(event.pos):
@@ -776,14 +740,12 @@ class GUIClass:
         else:
             pass
 
-
     def _check_active(self, event, box, active, color):
         if self.filter_elem[box].collidepoint(event.pos):
             self.filter_elem[active] = not self.filter_elem[active]
         else:
             self.filter_elem[active] = False
         self.filter_elem[color] = color_active if self.filter_elem[active] else color_inactive
-
 
     def _reset_node_color(self, elem):
         for i in self.node_elem.values():
@@ -792,33 +754,45 @@ class GUIClass:
                 continue
             if i.get_mac() != elem.get_mac():
                 i.set_sprite_props("color", BLUE)
-                # self.node_elem[i.get_mac()].set_sprite_props("color", BLUE)
-        pass
 
     def _reset_conn_color(self, elem):
         for i in self.conn_elem.values():
-            # temp = i.get_sprite_props()
-            # temp["color"] = BLUE
             if elem == 'reset':
                 i.set_sprite_props("color", BLUE)
                 continue
             if tuple(sorted([i.get_mac_one(), i.get_mac_two()])) != tuple(sorted([elem.get_mac_one(), elem.get_mac_two()])):
                 i.set_sprite_props("color", BLUE)
-                # self.node_elem[tuple(sorted(i.get_mac_one(), i.get_mac_two()))].set_sprite_props("color", YELLOW)
-        pass
 
+    def _check_page_buttons(self, event, button, idx, d):
+        if d:
+            if self.info_elem[button].collidepoint(event.pos):
+                if self.indices[idx] > 0:
+                    self.indices[idx] -= 1
+        else:
+            if self.info_elem[button].collidepoint(event.pos):
+                self.indices[idx] += 1
+
+    def _check_map_ctl(self, event, button, idx, d):
+        if d:
+            if self.map_ctl[button].collidepoint(event.pos):
+                print("in up")
+                self.tings["map_adj"] = True
+                self.indices[idx] = round(self.indices[idx] + .1, 1)
+                return (Action.RESEND, "")
+        else:
+            if self.map_ctl[button].collidepoint(event.pos):
+                print("in dwn")
+                if self.indices[idx] > 0.1:
+                    self.tings["map_adj"] = True
+                    self.indices[idx] = round(self.indices[idx] - .1, 1)
+                    return (Action.RESEND, "")
 
     def input_check(self):
-        # self.ttime += 1
-        # print(self.ttime)
-
         for event in pygame.event.get():
-            # print(f">> list index: {self.indices['list']}")
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-
                 temp = self._check_filter_keydown(event, "input_box_active", Action.FILTER, "input_text", 16, "input")
                 if temp != None:
                     return temp
@@ -828,30 +802,30 @@ class GUIClass:
                 temp = self._check_filter_keydown(event, "upper_box_active", Action.MAX, "upper_text", 4, "upper")
                 if temp != None:
                     if temp[1] == "":
-                        self.max = DEFAULT_MAX
+                        self.tings["max"] = DEFAULT_MAX
                     else:
                         try:
-                            self.max = int(temp[1])
-                            self.new_map = True
+                            self.tings["max"] = int(temp[1])
+                            self.tings["new_map"] = True
                             return (Action.RESEND, "")
                         except ValueError as _:
-                            self.in_err = True
-                            self.max = DEFAULT_MAX
-                    self.new_map = True
+                            self.tings["in_err"] = True
+                            self.tings["max"] = DEFAULT_MAX
+                    self.tings["new_map"] = True
                     return (Action.RESEND, "")
                 temp = self._check_filter_keydown(event, "lower_box_active", Action.MIN, "lower_text", 4, "lower")
                 if temp != None:
                     if temp[1] == "":
-                        self.min = 0
+                        self.tings["min"] = 0
                     else:
                         try:
-                            self.min = int(temp[1])
-                            self.new_map = True
+                            self.tings["min"] = int(temp[1])
+                            self.tings["new_map"] = True
                             return (Action.RESEND, "")
                         except ValueError as _:
-                            self.in_err = True
-                            self.min = 0
-                    self.new_map = True
+                            self.tings["in_err"] = True
+                            self.tings["min"] = 0
+                    self.tings["new_map"] = True
                     return (Action.RESEND, "")
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -860,58 +834,54 @@ class GUIClass:
 
             if len(self.list_elem) > 0:
                 if len(self.list_elem) > 135:
-                    self.scroll_step = (len(self.list_elem) - 6) / 135
+                    self.tings["scroll_step"] = (len(self.list_elem) - 6) / 135
                 else:
-                    self.scroll_step =  (len(self.list_elem) - 6) / 135
+                    self.tings["scroll_step"] =  (len(self.list_elem) - 6) / 135
 
             if event.type == pygame.MOUSEBUTTONDOWN and not event.button == 5 and not event.button == 4:
                 if event.button == 1:
                     if self.list_banner["list_scroll"].collidepoint(event.pos):
                         self.list_bools["scroll_bar_drag"] = True
-                        self.list_off = self.list_banner["list_scroll"].y - event.pos[1]
+                        self.tings["list_off"] = self.list_banner["list_scroll"].y - event.pos[1]
             elif event.type == pygame.MOUSEBUTTONUP and not event.button == 5 and not event.button == 4:
                 if event.button == 1:
                     self.list_bools["scroll_bar_drag"] = False
             elif event.type == pygame.MOUSEMOTION:
                 if self.list_bools["scroll_bar_drag"]:
                     if self.list_banner["list_scroll"].y >= self.panels["bottom_left"].y + 55 and self.list_banner["list_scroll"].y <= self.panels["bottom_left"].y + 190:
-                        temp = event.pos[1] + self.list_off
+                        temp = event.pos[1] + self.tings["list_off"]
                         if temp > self.panels["bottom_left"].y + 190:
                             temp = self.panels["bottom_left"].y + 190
                         if temp < self.panels["bottom_left"].y + 55:
                             temp = self.panels["bottom_left"].y + 55
                         self.list_banner["list_scroll"].y = temp
             if self.list_bools["scroll_bar_drag"]:
-                if self.scroll_step >= 1:
+                if self.tings["scroll_step"] >= 1:#ff
                     temp = self.list_banner["list_scroll"].y - (self.panels["bottom_left"].y + 55)
-                    if temp * self.scroll_step < len(self.list_elem) - 6:
-                        self.indices["list"] = int(temp * self.scroll_step)
+                    if temp * self.tings["scroll_step"] < len(self.list_elem) - 6:
+                        self.indices["list"] = int(temp * self.tings["scroll_step"])
                     if self.list_banner["list_scroll"].y == (self.panels["bottom_left"].y + 55):
                         self.indices["list"] = 0
                 else:
                     temp = self.list_banner["list_scroll"].y - (self.panels["bottom_left"].y + 55)
                     scroll_s = 1
-                    if self.scroll_step:
-                        scroll_s = 1 / self.scroll_step
+                    if self.tings["scroll_step"]:
+                        scroll_s = 1 / self.tings["scroll_step"]
                     self.indices["list"] = int(temp / scroll_s)
                     if self.list_banner["list_scroll"].y == (self.panels["bottom_left"].y + 55):
                         self.indices["list"] = 0
 
-# --------
-
             if len(self.list_elem) > 0:
-                self.play_step = (self.f_len - len(self.screen_packets)) / 334
-
+                self.tings["play_step"] = (self.tings["f_len"] - len(self.screen_packets)) / 334
             if event.type == pygame.MOUSEBUTTONDOWN and not event.button == 5 and not event.button == 4:
                 if event.button == 1:
                     if self.filter_elem["play_buf_1"].collidepoint(event.pos):
-                        self.play_drag = True
-                        self.play_off = self.filter_elem["play_buf_1"].x - event.pos[0]
-
+                        self.tings["play_drag"] = True
+                        self.tings["play_off"] = self.filter_elem["play_buf_1"].x - event.pos[0]
             if event.type == pygame.MOUSEMOTION:
-                if self.play_drag:
+                if self.tings["play_drag"]:
                     if self.filter_elem["play_buf_1"].x >= self.panels["bottom_right"].x + 8 and self.filter_elem["play_buf_1"].x <= self.panels["bottom_right"].x + 342:
-                        temp = event.pos[0] + self.play_off
+                        temp = event.pos[0] + self.tings["play_off"]
                         if temp > self.panels["bottom_right"].x + 342:
                             temp = self.panels["bottom_right"].x + 342
                         if temp < self.panels["bottom_right"].x + 8:
@@ -919,31 +889,18 @@ class GUIClass:
                         self.filter_elem["play_buf_1"].x = temp
             if event.type == pygame.MOUSEBUTTONUP and not event.button == 5 and not event.button == 4:
                 if event.button == 1:
-                    self.play_drag = False
-            if self.play_drag:
-                if self.play_step >= 1:
+                    self.tings["play_drag"] = False
+            if self.tings["play_drag"]:
+                if self.tings["play_step"] >= 1:
                     temp = self.filter_elem["play_buf_1"].x - (self.panels["bottom_right"].x + 8)
-                    if temp * self.play_step < self.f_len - len(self.screen_packets):
-                        # self.indices["play"] = int(temp * self.play_step)
-                        return (Action.PLAYMOVE, int(temp * self.play_step))
-                    # if self.filter_elem["play_buf_1"].x == (self.panels["bottom_right"].x + 8):
-                    #     self.indices["play"] = 0
+                    if temp * self.tings["play_step"] < self.tings["f_len"] - len(self.screen_packets):
+                        return (Action.PLAYMOVE, int(temp * self.tings["play_step"]))
                 else:
                     temp = self.filter_elem["play_buf_1"].x - (self.panels["bottom_right"].x + 8)
                     scroll_s = 1
-                    if self.play_step:
-                        scroll_s = 1 / self.play_step
-                    # self.indices["play"] = int(temp / scroll_s)
+                    if self.tings["play_step"]:
+                        scroll_s = 1 / self.tings["play_step"]
                     return (Action.PLAYMOVE, int(temp / scroll_s))
-
-                    # if self.filter_elem["play_buf_1"].x == (self.panels["bottom_right"].x + 8):
-                    #     self.indices["play"] = 0
-
-
-
-
-
-
 
             if event.type == pygame.MOUSEBUTTONDOWN and not event.button == 5 and not event.button == 4:
                 if self.filter_elem["enter_button"].collidepoint(event.pos):
@@ -961,14 +918,12 @@ class GUIClass:
 
                 if self.filter_elem["help_button"].collidepoint(event.pos):
                     print("hey there!")
-                    self.helpp = not self.helpp
+                    self.tings["help"] = not self.tings["help"]
 
                 self._check_active(event, "input_box", "input_box_active", "input_box_color")
-                # print("asdf")
                 self._check_active(event, "range_box", "range_box_active", "range_box_color")
                 self._check_active(event, "lower_box", "lower_box_active", "lower_box_color")
                 self._check_active(event, "upper_box", "upper_box_active", "upper_box_color")
-
 
                 res = self._check_toggle(event, "toggle1", "toggle1_color", Action.ARP)
                 if res != None: return res
@@ -988,8 +943,6 @@ class GUIClass:
                 if res != None: return res
                 res = self._check_toggle(event, "toggle9", "toggle9_color", Action.IGMP)
                 if res != None: return res
-
-                #-- play buttons
 
                 if self.filter_elem["play1"].collidepoint(event.pos):
                     self.filter_elem["play1_color"] = RED
@@ -1020,11 +973,8 @@ class GUIClass:
 
                 if self.filter_elem["spd_up"].collidepoint(event.pos):
                     return (Action.SPDUP, "")
-                    pass
                 if self.filter_elem["spd_dw"].collidepoint(event.pos):
                     return (Action.SPDDW, "")
-                    pass
-
 
                 if self.list_banner["list_banner1"].collidepoint(event.pos):
                     if not self.list_bools["time"]:
@@ -1050,7 +1000,6 @@ class GUIClass:
                 if self.list_banner["list_banner4"].collidepoint(event.pos):
                     if not self.list_bools["prot"]:
                         self.list_bools["prot"] = not self.list_bools["prot"]
-                        # self.list_elem = sorted(self.list_elem, key=lambda x: x.packet[IP].proto if x.packet.haslayer(IP) else 0)
                         self.list_elem = sorted(self.list_elem, key=lambda x: (
                             x.packet[IP].proto if x.packet.haslayer(IP) else (
                                 x.packet[IPv6].nh if x.packet.haslayer(IPv6) else (
@@ -1060,7 +1009,6 @@ class GUIClass:
                         ))
                     else:
                         self.list_bools["prot"] = not self.list_bools["prot"]
-                        # self.list_elem = sorted(self.list_elem, key=lambda x: x.packet[IP].proto if x.packet.haslayer(IP) else 0, reverse=True)
                         self.list_elem = sorted(self.list_elem, key=lambda x: (
                             x.packet[IP].proto if x.packet.haslayer(IP) else (
                                 x.packet[IPv6].nh if x.packet.haslayer(IPv6) else (
@@ -1078,7 +1026,8 @@ class GUIClass:
 
                 if self.list_banner["list_banner6"].collidepoint(event.pos):
                     self.set_list_packets(self.screen_packets)
-                    pass
+                    self._reset_conn_color("reset")
+                    self._reset_node_color("reset")
                 if self.list_banner["list_banner7"].collidepoint(event.pos):
                     if self.indices["list"] > 0:
                         self.indices["list"] -= 1
@@ -1090,63 +1039,23 @@ class GUIClass:
                     if self.indices["info_page"] > 0:
                         self.indices["info_page"] -= 1
 
-                    pass
                 if self.info_elem["info_fwd_button"].collidepoint(event.pos):
                     if self.indices["info_page"] < 1:
                         self.indices["info_page"] += 1
-                    pass
 
-
-                if self.info_elem["info_raw_back_button"].collidepoint(event.pos):
-                    if self.indices["info_page"] > 0:
-                        self.indices["info_page"] -= 1
-
-                    pass
-                if self.info_elem["info_raw_fwd_button"].collidepoint(event.pos):
-                    self.indices["info_page"] += 1
-                    pass
+                self._check_page_buttons(event, "info_raw_back_button", "info_page", True)
+                self._check_page_buttons(event, "info_raw_fwd_button", "info_page", False)
+                self._check_page_buttons(event, "info_pay_back_button", "info_page", True)
+                self._check_page_buttons(event, "info_pay_fwd_button", "info_page", False)
+                self._check_page_buttons(event, "traffic_in_back_button", "t_in_page", True)
+                self._check_page_buttons(event, "traffic_in_fwd_button", "t_in_page", False)
+                self._check_page_buttons(event, "traffic_out_back_button", "t_out_page", True)
+                self._check_page_buttons(event, "traffic_out_fwd_button", "t_out_page", False)
+                self._check_page_buttons(event, "conn_traffic_back_button", "c_t_page", True)
+                self._check_page_buttons(event, "conn_traffic_fwd_button", "c_t_page", False)
 
                 if self.info_elem["info_raw_ah_button"].collidepoint(event.pos):
-                    self.ascii_hex = not self.ascii_hex
-                    pass
-
-                if self.info_elem["info_pay_back_button"].collidepoint(event.pos):
-                    if self.indices["info_page"] > 0:
-                        self.indices["info_page"] -= 1
-
-                    pass
-                if self.info_elem["info_pay_fwd_button"].collidepoint(event.pos):
-                    self.indices["info_page"] += 1
-                    pass
-
-
-                if self.info_elem["traffic_in_back_button"].collidepoint(event.pos):
-                    if self.indices["t_in_page"] > 0:
-                        self.indices["t_in_page"] -= 1
-
-                    pass
-                if self.info_elem["traffic_in_fwd_button"].collidepoint(event.pos):
-                    self.indices["t_in_page"] += 1
-                    pass
-
-
-                if self.info_elem["traffic_out_back_button"].collidepoint(event.pos):
-                    if self.indices["t_out_page"] > 0:
-                        self.indices["t_out_page"] -= 1
-
-                    pass
-                if self.info_elem["traffic_out_fwd_button"].collidepoint(event.pos):
-                    self.indices["t_out_page"] += 1
-                    pass
-
-                if self.info_elem["conn_traffic_back_button"].collidepoint(event.pos):
-                    if self.indices["c_t_page"] > 0:
-                        self.indices["c_t_page"] -= 1
-
-                    pass
-                if self.info_elem["conn_traffic_fwd_button"].collidepoint(event.pos):
-                    self.indices["c_t_page"] += 1
-                    pass
+                    self.tings["ascii_hex"] = not self.tings["ascii_hex"]
 
                 if self.map_ctl["load_back"].collidepoint(event.pos):
                     return Action.BACK
@@ -1154,52 +1063,26 @@ class GUIClass:
                 if self.map_ctl["save"].collidepoint(event.pos):
                     return Action.SAVE
 
-
-
-                if self.map_ctl["rep_const_up"].collidepoint(event.pos):
-                    self.map_adj = True
-                    self.indices["rep_const"] = round(self.indices["rep_const"] + .1, 1)
-                    return (Action.RESEND, "")
-                    pass
-
-                if self.map_ctl["rep_const_dw"].collidepoint(event.pos):
-                    if self.indices["rep_const"] > 0.1:
-                        self.map_adj = True
-                        self.indices["rep_const"] = round(self.indices["rep_const"] - .1, 1)
-                        return (Action.RESEND, "")
-                    pass
-
-                if self.map_ctl["att_const_up"].collidepoint(event.pos):
-                    self.map_adj = True
-                    self.indices["att_const"] = round(self.indices["att_const"] + .1, 1)
-                    return (Action.RESEND, "")
-
-                    pass
-
-                if self.map_ctl["att_const_dw"].collidepoint(event.pos):
-                    if self.indices["att_const"] > 0.1:
-                        self.indices["att_const"] = round(self.indices["att_const"] - .1, 1)
-                        self.map_adj = True
-                        return (Action.RESEND, "")
-                    pass
-
-                if self.map_ctl["glob_const_up"].collidepoint(event.pos):
-                    self.indices["glob_const"] = round(self.indices["glob_const"] + .1, 1)
-                    self.map_adj = True
-                    return (Action.RESEND, "")
-                    pass
-
-                if self.map_ctl["glob_const_dw"].collidepoint(event.pos):
-                    if self.indices["glob_const"] > 0.1:
-                        self.indices["glob_const"] = round(self.indices["glob_const"] - .1, 1)
-                        self.map_adj = True
-                        return (Action.RESEND, "")
-                    pass
-
-                # print(f"rep: {self.indices['rep_const']} | att: {self.indices['att_const']} | glob: {self.indices['glob_const']}")
+                res = self._check_map_ctl(event, "rep_const_up", "rep_const", True)
+                if res != None:
+                    return res
+                res = self._check_map_ctl(event, "rep_const_dw", "rep_const", False)
+                if res != None:
+                    return res
+                res = self._check_map_ctl(event, "att_const_up", "att_const", True)
+                if res != None:
+                    return res
+                res = self._check_map_ctl(event, "att_const_dw", "att_const", False)
+                if res != None:
+                    return res
+                res = self._check_map_ctl(event, "glob_const_up", "glob_const", True)
+                if res != None:
+                    return res
+                res = self._check_map_ctl(event, "glob_const_dw", "glob_const", False)
+                if res != None:
+                    return res
 
                 node_toggle = True
-
                 for elem in self.node_elem.values():
                     if elem.get_sprite_props()["sprite"].collidepoint(event.pos):
                         node_toggle = False
@@ -1227,16 +1110,12 @@ class GUIClass:
                             else:
                                 elem.sprite_props["color"] = YELLOW
                                 self._post_conn(elem)
-                            pass
-
 
                 for idx, elem in enumerate(self.list_elem):
                     if elem.sprite_props["sprite"].collidepoint(event.pos):
                         print(f"idx: {idx}")
                         self._post_list_ele(elem)
                         break
-                        pass
-
 
     def _post_conn(self, elem):
         to_show = []
@@ -1261,10 +1140,8 @@ class GUIClass:
                         prot = p[IPv6].nh
                     if p.haslayer(TCP):
                         temp = f"{ips} {p[TCP].sport} -> {ipd} {p[TCP].dport} | {prot}"
-                        pass
                     if p.haslayer(UDP):
                         temp = f"{ips} {p[UDP].sport} -> {ipd} {p[UDP].dport} | {prot}"
-                        pass
                     if temp and temp not in traffic:
                         traffic.append(temp)
                     if p.haslayer(ARP):
@@ -1286,10 +1163,8 @@ class GUIClass:
                         prot = p[IPv6].nh
                     if p.haslayer(TCP):
                         temp = f"{ipd} {p[TCP].dport} <- {ips} {p[TCP].sport} | {prot}"
-                        pass
                     if p.haslayer(UDP):
                         temp = f"{ipd} {p[UDP].dport} <- {ips} {p[UDP].sport} | {prot}"
-                        pass
                     if temp and temp not in traffic:
                         traffic.append(temp)
                     if p.haslayer(ARP):
@@ -1297,7 +1172,6 @@ class GUIClass:
                         temp = f"{p[ARP].pdst} <- {p[ARP].psrc}"
                         # traffic.append(hwp)
                         traffic.append(temp)
-                pass
         conn = {
             "hdr_type": "conn",
             "mac_one": mac_one,
@@ -1311,7 +1185,6 @@ class GUIClass:
         }
         to_show.append(conn_traffic)
         self.in_info = to_show
-        pass
 
     def _post_node(self, elem):
         to_show = []
@@ -1327,13 +1200,11 @@ class GUIClass:
                 if p[Ether].src == mac:
                     temp = str(p[Ether].dst)
                     if p.haslayer(IP):
-                        # print("hey whats up")
                         if host_ip4 == None:
                             host_ip4 = p[IP].src
                         temp = f"{p[IP].dst}"
                         prot = p[IP].proto
                     elif p.haslayer(IPv6):
-                        # print("hey whats up")
                         if host_ip6 == None:
                             host_ip6 = p[IPv6].src
                         temp = f"{p[IPv6].dst}"
@@ -1349,24 +1220,19 @@ class GUIClass:
                     #
                     if tempp and tempp not in out_traffic:
                         out_traffic.append(tempp)
-
                     if p.haslayer(ARP):
                         if host_ip4 == None:
                             host_ip4 = p[ARP].psrc
                         temp = f"{p[ARP].psrc} -> {p[ARP].pdst} | ARP"
                         out_traffic.append(temp)
-                        pass
-
                 elif p[Ether].dst == mac:
                     temp = str(p[Ether].src)
                     if p.haslayer(IP):
-                        # print("hey whats up")
                         if host_ip4 == None:
                             host_ip4 = p[IP].dst
                         temp = f"{p[IP].src}"
                         prot = p[IP].proto
                     elif p.haslayer(IPv6):
-                        # print("hey whats up")
                         if host_ip6 == None:
                             host_ip6 = p[IPv6].dst
                         temp = f"{p[IPv6].src}"
@@ -1388,7 +1254,6 @@ class GUIClass:
                             host_ip4 = p[ARP].pdst
                         temp = f"{p[ARP].pdst} <- {p[ARP].psrc} | ARP"
                         in_traffic.append(temp)
-                        pass
 
         host = {
             "hdr_type": "host",
@@ -1406,8 +1271,6 @@ class GUIClass:
         # print(traffic)
         to_show.append(traffic)
         self.in_info = to_show
-
-        pass
 
     def _post_list_ele(self, elem):
         to_show = []
@@ -1659,7 +1522,6 @@ class GUIClass:
             }
             to_show.append(udp)
             if pkt.haslayer(DNS):
-                # print(pkt[DNS].show())
                 dns = {
                     "hdr_type": "dns",
                     "tran_id": str(pkt[DNS].id),
@@ -1679,7 +1541,6 @@ class GUIClass:
                 }
                 to_show.append(dns)
         if pkt.haslayer(ICMP):
-            # will need to be made reactive to differing types of ICMPs
             icmp = {}
             icmp["hdr_type"] = "icmp"
             ttype = str(pkt[ICMP].type)
@@ -1701,7 +1562,6 @@ class GUIClass:
             elif ttype == 12:
                 icmp["ptr"] = str(pkt[ICMP].ptr)
             to_show.append(icmp)
-            pass
 
         if IP in pkt and pkt[IP].proto == 2:
             print(pkt.show())
@@ -1736,8 +1596,6 @@ class GUIClass:
                 "prot_dst": str(pkt[ARP].pdst),
             }
             to_show.append(arp)
-            pass
-
         if pkt.haslayer(TCP):
             if str(pkt[TCP].payload) != "Raw":
                 pl = {}
@@ -1758,32 +1616,27 @@ class GUIClass:
                 except:
                     pl["payload"] = str(pkt[UDP].payload)
                 to_show.append(pl)
-
         if pkt.haslayer(Raw):
             r = {
                 "hdr_type": "raw",
                 "str": pkt.getlayer(Raw).load,
             }
-            # print(r)
             to_show.append(r)
             pass
         self.in_info = to_show
 
 
     def _update_nodes(self):
-        # for i in self.node_elem.values():
-            # print(f"{i.get_mac()} -- {i.get_neighbors()}")
         node_list = list(self.node_elem.keys())
         conn_list = list(self.conn_elem.keys())
-        # nodes = self.node_elem
         positions = {}
         pos = None
-        if (self.new_map and sorted(node_list) != sorted(self.screen_keys)) or self.map_adj:
-            print("go fuk yurself")
+        if (self.tings["new_map"] and sorted(node_list) != sorted(self.screen_keys)) or self.tings["map_adj"]:
+            # print("go fuk yurself")
             self.screen_keys = node_list
-            self.new_map = False
-            self.map_adj = False
-            print(f"min {self.min} max {self.max}")
+            self.tings["new_map"] = False
+            self.tings["map_adj"] = False
+            # print(f"min {self.tings["min"]} max {self.tings["max"]}")
             for i in self.node_elem.values():
                 positions[i.get_mac()] = (i.get_sprite_props()["sprite"].x, i.get_sprite_props()["sprite"].y)
             pos = update_positions(node_list, positions, conn_list, repulsive_const=self.indices["rep_const"], attractive_const=self.indices["att_const"], global_attractive_const=self.indices["glob_const"])
@@ -1791,14 +1644,10 @@ class GUIClass:
             self.graph_pos = pos
         else:
             pos = self.graph_pos
-
         placed = []
         cnt = 0
-
         for node_id, (x, y) in pos.items():
             node = self.node_elem[node_id]
-            # if (self.min != 0 or self.max != 0) and (len(node.get_packet_list()) < self.min or len(node.get_packet_list()) > self.max):
-            #     continue
             sprt_p = node.get_sprite_props()
 
             nx = int((x * 120)) + 400
@@ -1814,16 +1663,9 @@ class GUIClass:
                 ny = 410
             sprt_p["sprite"].y = ny
 
-            # print(f"node: {node.get_mac()}: x: {nx}, y: {ny}")
-
-
             self.node_elem[node.get_mac()].set_sprite_props("sprite", sprt_p["sprite"])
         conn_list = list(self.conn_elem.values())
         conns = self.conn_elem
-        # print("--")
-        # print("--")
-
-
         for conn in conn_list:
             c_sprt_p = conn.get_sprite_props()
 
@@ -1835,7 +1677,6 @@ class GUIClass:
             self.conn_elem[tuple(sorted([conn.get_mac_one(), conn.get_mac_two()]))].set_sprite_props("s_sprite", surf)
             self.conn_elem[tuple(sorted([conn.get_mac_one(), conn.get_mac_two()]))].set_sprite_props("r_sprite", rect)
             self.screen.blit(surf, rect.topleft)
-            pass
 
         for node_id, (x, y) in pos.items():
             node = self.node_elem[node_id]
@@ -1845,21 +1686,16 @@ class GUIClass:
 
             pygame.draw.circle(self.screen, sprt_p["color"], (sprt_p["sprite"].x + 15, sprt_p["sprite"].y + 15), sprt_p["radius"])
 
-        pass
-
     def _update_info(self, ac_bool):
         if ac_bool == False:
             print("heyyy")
             pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box1"])
             display_surface = self.tings["font2"].render("That is not a correct input option", True, BLACK)
             self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 100, self.info_elem["display_box1"].y + 250))
-
             return None
-
 
         if self.in_info == None:
             pygame.draw.rect(self.screen, WHITE, self.info_elem["display_box1"])
-
 
             display_surface = self.tings["font2"].render("Welcome to pNode", True, BLACK)
             self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 150, self.info_elem["display_box1"].y + 5))
@@ -1878,8 +1714,6 @@ class GUIClass:
 
             display_surface = self.tings["font2"].render("Gravity", True, BLACK)
             self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 5, self.info_elem["display_box1"].y + 380))
-
-
 
             display_surface = self.tings["font2"].render("-Seclect node map elements to view information", True, BLACK)
             self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 75, self.info_elem["display_box1"].y + 35))
@@ -1917,6 +1751,9 @@ class GUIClass:
             display_surface = self.tings["font2"].render("Filter parameters:", True, BLACK)
             self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 90, self.info_elem["display_box1"].y + 225))
 
+            display_surface = self.tings["font2"].render("ex: 'ip=xxx.xxx.xxx.xxx'", True, BLACK)
+            self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 90, self.info_elem["display_box1"].y + 445))
+
             self.info_elem["info_back_button"] = pygame.Rect(self.info_elem["display_box1"].x + 300, self.info_elem["display_box1"].y + 225 , 30, 20)
             pygame.draw.rect(self.screen, GRAY, self.info_elem["info_back_button"])
             dst_surface = self.tings["font2"].render("<", True, BLACK)
@@ -1933,9 +1770,7 @@ class GUIClass:
                 display_surface = self.tings["font2"].render(filt_parameters[i], True, BLACK)
                 self.screen.blit(display_surface, (self.info_elem["display_box1"].x + 85, self.info_elem["display_box1"].y + 255 + depth))
                 depth += 15
-
         else:
-            # is_raw
             depth = 0
             for hdr in self.in_info[self.indices["info"]:]:
                 # print(f"asdfasdf {hdr}")
@@ -2029,7 +1864,6 @@ class GUIClass:
                         depth = draw_ipv6_routing(self, hdr, depth)
                     case "ipv6_fragment":
                         depth = draw_ipv6_fragment(self, hdr, depth)
-                        pass
                     # case "esp":
                     #     depth = draw_esp(self, hdr, depth)
                     #     pass
@@ -2069,12 +1903,11 @@ class GUIClass:
                 t = elem.packet.summary()
                 self.screen.blit(self.tings["font2"].render(f"{date} | {t[:95]}", True, BLACK), (elem.sprite_props["sprite"].x + 5, elem.sprite_props["sprite"].y + 5))
                 buf += 35
-        pass
 
     def update_screen(self, ac_bool):
 
-        if self.in_err:
-            self.in_err = False
+        if self.tings["in_err"]:
+            self.tings["in_err"] = False
             ac_bool = False
 
         input_txt = self.filter_elem["input_text"]
@@ -2164,8 +1997,8 @@ class GUIClass:
 
 
 
-        if self.f_len and self.indices["play"]:
-            lidx = self.f_len / self.indices["play"]
+        if self.tings["f_len"] and self.indices["play"]:
+            lidx = self.tings["f_len"] / self.indices["play"]
             play_x = 334 // lidx
             self.filter_elem["play_buf_1"].x = self.filter_elem["play_line"].x + play_x
         elif not self.indices["play"]:
@@ -2276,7 +2109,7 @@ class GUIClass:
         # self._update_info()
         self._update_list()
 
-        if self.helpp:
+        if self.tings["help"]:
             # print("helping")
             pygame.draw.rect(self.screen, GRAY, self.help_win["1"])
             self.screen.blit(self.help_win["1_text_1_1"], (self.help_win["1"].x + 5, self.help_win["1"].y + 3))
@@ -2361,4 +2194,4 @@ class GUIClass:
         pkts = filtered_packets[step_position:step_position + int(step_size)]
         self.set_packets(pkts)
         self.indices["play"] = step_position
-        self.f_len = len(filtered_packets)
+        self.tings["f_len"] = len(filtered_packets)

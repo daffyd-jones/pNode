@@ -28,7 +28,6 @@ def draw_ether(slf, hdr, depth):
     dst_surface = slf.tings["font2"].render(hdr["dst_mac"], True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 150, tile.y + 80))
     return depth
-    pass
 
 def draw_ip(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 150)
@@ -77,7 +76,6 @@ def draw_ip(slf, hdr, depth):
     dst_surface = slf.tings["font2"].render(hdr["prot"], True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 330, tile.y + 65))
     return depth
-    pass
 
 def draw_tcp(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -140,7 +138,6 @@ def draw_tcp(slf, hdr, depth):
         b += 15
     #
     return depth
-    pass
 
 def draw_udp(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 150)
@@ -169,7 +166,6 @@ def draw_udp(slf, hdr, depth):
     dst_surface = slf.tings["font2"].render(hdr["checksum"], True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 130, tile.y + 80))
     return depth
-    pass
 
 def draw_dns(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 150)
@@ -371,7 +367,7 @@ def draw_arp(slf, hdr, depth):
 
 def draw_raw(slf, hdr, depth):
     rstr = hdr["str"]
-    if not slf.ascii_hex:
+    if not slf.tings["ascii_hex"]:
         rstr = str(' '.join(f'{byte:02x}' for byte in hdr["str"]))
     else:
         rstr = str(hdr["str"].decode('ascii', errors='ignore')).replace('\0', '')
@@ -400,7 +396,6 @@ def draw_raw(slf, hdr, depth):
     #
     if h_num > 2:
         pages = len(rstr) // (pchnk)
-        # print(f"]|> pages {pages}")
         slf.info_elem["info_raw_back_button"] = pygame.Rect(tile.x + 300, tile.y + 5 , 30, 20)
         pygame.draw.rect(slf.screen, GRAY, slf.info_elem["info_raw_back_button"])
         dst_surface = slf.tings["font2"].render("<", True, BLACK)
@@ -411,18 +406,7 @@ def draw_raw(slf, hdr, depth):
         dst_surface = slf.tings["font2"].render(">", True, BLACK)
         slf.screen.blit(dst_surface, (slf.info_elem["info_raw_fwd_button"].x + 10, slf.info_elem["info_raw_fwd_button"].y + 2))
         st = rstr[slf.indices["info_page"] * pchnk:(slf.indices["info_page"] * pchnk) + pchnk]
-        if not slf.ascii_hex:
-            # l = []
-            # r = []
-            # bf = False
-            # # print(st)
-            # for i in range(0, len(st), 24):
-            #     bf = not bf
-            #     if bf:
-            #         l.append(st[i: i + 24])
-            #     else:
-            #         r.append(st[i: i + 24])
-            #     pass
+        if not slf.tings["ascii_hex"]:
             st = ''.join([st[i:i+24] + ('    ' if (i // 24) % 2 == 0 else '')
                         for i in range(0, len(st), 24)])
             buf = 0
@@ -430,14 +414,6 @@ def draw_raw(slf, hdr, depth):
                 dst_surface = slf.tings["font2"].render(st[i: i + 52], True, BLACK)
                 slf.screen.blit(dst_surface, (tile.x + 5, tile.y + str_len + buf))
                 buf += 15
-            # buf = 0
-            # for i in range(0, len(r)):
-            #     dst_surface = slf.tings["font2"].render(r[i], True, BLACK)
-            #     slf.screen.blit(dst_surface, (tile.x + 205, tile.y + str_len + buf))
-            #     buf += 15
-
-
-        #
         else:
             buf = 0
             for i in range(0, len(st), str_len):
@@ -445,7 +421,7 @@ def draw_raw(slf, hdr, depth):
                 slf.screen.blit(dst_surface, (tile.x + 5, tile.y + str_len + buf))
                 buf += 15
     else:
-        if not slf.ascii_hex:
+        if not slf.tings["ascii_hex"]:
             l = []
             r = []
             bf = False
@@ -467,8 +443,6 @@ def draw_raw(slf, hdr, depth):
                 dst_surface = slf.tings["font2"].render(r[i], True, BLACK)
                 slf.screen.blit(dst_surface, (tile.x + 205, tile.y + str_len + buf))
                 buf += 15
-            # rstr = ''.join([rstr[i:i+24] + ('    ' if (i // 24) % 2 == 0 else '')
-            #             for i in range(0, len(rstr), 24)])
         else:
             buf = 0
             for i in range(0, len(rstr), str_len):
@@ -562,25 +536,8 @@ def draw_traffic(slf, hdr, depth):
     #
     dst_surface = slf.tings["font2"].render("- Traffic -", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 5))
-    # dst_surface = slf.tings["font2"].render("Out:", True, BLACK)
-    # slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 35))
-    # dst_surface = slf.tings["font2"].render("In:", True, BLACK)
-    # slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 150))
-    # ch_s = 50
-    # buf = 0
     h_num = 1
     if temp == 300:
-        # pages = len(hdr['str']) // (pchnk)
-        # # print(f"]|> pages {pages}")
-        # slf.info_elem["info_pay_back_button"] = pygame.Rect(tile.x + 300, tile.y + 5 , 30, 20)
-        # pygame.draw.rect(slf.screen, GRAY, slf.info_elem["info_pay_back_button"])
-        # slf.info_elem["info_pay_fwd_button"] = pygame.Rect(tile.x + 335, tile.y + 5 , 30, 20)
-        # pygame.draw.rect(slf.screen, GRAY, slf.info_elem["info_pay_fwd_button"])
-        # st = hdr["payload"][slf.indices["info_page"] * pchnk:(slf.indices["info_page"] * pchnk) + pchnk]
-        # for i in range(0, len(st), str_len):
-        #     dst_surface = slf.tings["font2"].render(st[i: i + str_len], True, BLACK)
-        #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + str_len + buf))
-        #     buf += 15
         dst_surface = slf.tings["font2"].render("Out:", True, BLACK)
         slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 35))
         #
@@ -598,7 +555,6 @@ def draw_traffic(slf, hdr, depth):
             dst_surface = slf.tings["font2"].render(str(in_t[i]), True, BLACK)
             slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 165 + buf))
             buf += 15
-        pass
     else:
         # ll lines
         dst_surface = slf.tings["font2"].render("Out:", True, BLACK)
@@ -626,9 +582,7 @@ def draw_traffic(slf, hdr, depth):
         slf.screen.blit(dst_surface, (slf.info_elem["traffic_in_back_button"].x + 10, slf.info_elem["traffic_in_back_button"].y + 2))
         dst_surface = slf.tings["font2"].render(">", True, BLACK)
         slf.screen.blit(dst_surface, (slf.info_elem["traffic_in_fwd_button"].x + 10, slf.info_elem["traffic_in_fwd_button"].y + 2))
-        #
-        # st = hdr["payload"][slf.indices["info_page"] * pchnk:(slf.indices["info_page"] * pchnk) + pchnk]
-        #
+
         buf = 0
         o_chnk = out_t[slf.indices["t_out_page"] * 10: (slf.indices["t_out_page"] * 10) + 10]
         for i in range(0, len(o_chnk)):
@@ -684,8 +638,6 @@ def draw_conn_traffic(slf, hdr, depth):
     dst_surface = slf.tings["font2"].render("- Traffic -", True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 5))
 
-    # ch_s = 50
-    # buf = 0
     h_num = 1
     if temp == 300:
         #
@@ -695,7 +647,6 @@ def draw_conn_traffic(slf, hdr, depth):
             dst_surface = slf.tings["font2"].render(str(in_t[i]), True, BLACK)
             slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 50 + buf))
             buf += 15
-        pass
     else:
         # ll lines
         #
@@ -760,7 +711,6 @@ def draw_ip6(slf, hdr, depth):
     src_surface = slf.tings["font2"].render(hdr["hlim"], True, BLACK)
     slf.screen.blit(src_surface, (tile.x + 330, tile.y + 65))
     return depth
-    pass
 
 def draw_ip6_hop(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -783,9 +733,6 @@ def draw_ip6_hop(slf, hdr, depth):
     slf.screen.blit(time_surface, (tile.x + 130, tile.y + 35))
     length_surface = slf.tings["font2"].render(hdr["len"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
-    # length_surface = slf.tings["font2"].render(str(hdr["options"]), True, BLACK)
-    # slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
-    # print(f"### {hdr['options']}")
     b = 0
     for a in hdr["options"]:
         # print(a)
@@ -799,7 +746,6 @@ def draw_ip6_hop(slf, hdr, depth):
         b += 15
     #
     return depth
-    pass
 
 def draw_ip6_dest_ops(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -831,7 +777,6 @@ def draw_ip6_dest_ops(slf, hdr, depth):
         b += 15
     #
     return depth
-    pass
 
 def draw_ip6_routing(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -864,15 +809,7 @@ def draw_ip6_routing(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
     length_surface = slf.tings["font2"].render(hdr["nh"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_ip6_fragment(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -901,15 +838,7 @@ def draw_ip6_fragment(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
     length_surface = slf.tings["font2"].render(hdr["nh"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 50))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 #//---
 
@@ -948,15 +877,7 @@ def draw_icmp6_echo_req(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
     length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_echo_rep(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -993,15 +914,7 @@ def draw_icmp6_echo_rep(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
     length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_dest_un(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1030,15 +943,7 @@ def draw_icmp6_dest_un(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
     length_surface = slf.tings["font2"].render(hdr["length"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_too_big(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1067,15 +972,7 @@ def draw_icmp6_too_big(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
     length_surface = slf.tings["font2"].render(hdr["mtu"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_time_ex(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1104,15 +1001,7 @@ def draw_icmp6_time_ex(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
     length_surface = slf.tings["font2"].render(hdr["length"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_param_prob(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1141,15 +1030,7 @@ def draw_icmp6_param_prob(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
     length_surface = slf.tings["font2"].render(hdr["ptr"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_ni_quer(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1186,15 +1067,7 @@ def draw_icmp6_ni_quer(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
     length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_ni_rep(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1231,15 +1104,7 @@ def draw_icmp6_ni_rep(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
     length_surface = slf.tings["font2"].render(hdr["data"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 110))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_nd_rs(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 150)
@@ -1268,15 +1133,7 @@ def draw_icmp6_nd_rs(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 65))
     length_surface = slf.tings["font2"].render(hdr["res"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_nd_ra(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1343,15 +1200,7 @@ def draw_icmp6_nd_ra(slf, hdr, depth):
     slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 95))
     dst_surface = slf.tings["font2"].render(hdr["routlt"], True, BLACK)
     slf.screen.blit(dst_surface, (tile.x + 340, tile.y + 110))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_nd_ns(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1384,15 +1233,7 @@ def draw_icmp6_nd_ns(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 80))
     length_surface = slf.tings["font2"].render(hdr["tgt"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 95))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
 
 def draw_icmp6_nd_na(slf, hdr, depth):
     tile = pygame.Rect(slf.panels['top_right'].x + 5, slf.panels['top_right'].y + 5 + depth, 416, 300)
@@ -1437,12 +1278,4 @@ def draw_icmp6_nd_na(slf, hdr, depth):
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 125))
     length_surface = slf.tings["font2"].render(hdr["tgt"], True, BLACK)
     slf.screen.blit(length_surface, (tile.x + 130, tile.y + 140))
-    # b = 0
-    # for a in hdr["options"]:
-    #     # print(a)
-    #     dst_surface = slf.tings["font2"].render(f"{a[0]}: {a[1]}", True, BLACK)
-    #     slf.screen.blit(dst_surface, (tile.x + 5, tile.y + 110 + b))
-    #     b += 15
-    # #
     return depth
-    pass
