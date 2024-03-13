@@ -299,7 +299,7 @@ class GUIClass:
         load_ele["input_box_color"] = color_inactive
         load_ele["input_box_active"] = False
         load_ele["amt_box"] = pygame.Rect(472, 395, 70, 30)
-        load_ele["amt_text"] = ''
+        load_ele["amt_text"] = 'pkt#'
         load_ele["amt_box_color"] = color_inactive
         load_ele["amt_box_active"] = False
         load_ele["scroll"] = 0
@@ -678,8 +678,10 @@ class GUIClass:
 
                 if self.load_elem["amt_box"].collidepoint(event.pos):
                     self.load_elem["amt_box_active"] = not self.load_elem["amt_box_active"]
+                    self.load_elem["amt_text"] = ''
                 else:
                     self.load_elem["amt_box_active"] = False
+                    self.load_elem["amt_text"] = 'pkt#'
                 self.load_elem["amt_box_color"] = color_active if self.load_elem["amt_box_active"] else color_inactive
 
                 if self.load_elem["if_up"].collidepoint(event.pos):
