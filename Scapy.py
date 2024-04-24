@@ -19,10 +19,8 @@ def protocol(self, type):
             return [pkt for pkt in self.filtered_packets if TCP in pkt and ((pkt[TCP].dport == 80 or pkt[TCP].sport == 80) or (pkt.haslayer(Raw) and "HTTP" in str(pkt[Raw].load)) or (pkt[TCP].dport == 443 or pkt[TCP].sport == 443))]
         case "SSH":
             return [pkt for pkt in self.filtered_packets if TCP in pkt and (pkt[TCP].dport == 22 or pkt[TCP].sport == 22)]
-        # case "ICMP":
-        #     return [pkt for pkt in self.filtered_packets if ICMP in pkt]
         case "ICMP":
-            return [pkt for pkt in self.filtered_packets if ICMP in pkt or ICMPv6EchoRequest in pkt or ICMPv6EchoReply in pkt or ICMPv6ND_NS in pkt or ICMPv6ND_NA in pkt or ICMPv6NDOptSrcLLAddr in pkt or ICMPv6NDOptDstLLAddr in pkt or ICMPv6NDOptMTU in pkt or ICMPv6NDOptPrefixInfo in pkt]
+            return [pkt for pkt in self.filtered_packets if ICMP in pkt or ICMPv6EchoRequest in pkt or ICMPv6EchoReply in pkt or ICMPv6ND_NS in pkt or ICMPv6ND_NA in pkt or ICMPv6NDOptSrcLLAddr in pkt or ICMPv6NDOptDstLLAddr in pkt or ICMPv6NDOptMTU in pkt or ICMPv6NDOptPrefixInfo in pkt or ICMPv6DestUnreach in pkt or ICMPv6PacketTooBig in pkt or ICMPv6TimeExceeded in pkt or ICMPv6ParamProblem in pkt or ICMPv6NIQueryIPv4 in pkt or ICMPv6NIReplyIPv4 in pkt or ICMPv6ND_RS in pkt or ICMPv6ND_RA in pkt or ICMPv6MLReport in pkt or ICMPv6MLReport2 in pkt]
         case "IGMP":
             return [pkt for pkt in self.filtered_packets if IP in pkt and pkt[IP].proto == 2]
 
@@ -40,14 +38,14 @@ class ScapyClass:
             "src_ip": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(IP) and pkt[IP].src == x],
             "dst_ip": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(IP) and pkt[IP].dst == x],
             "len": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(IP) and len(pkt[IP]) == x],
-            "ttl": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(IP) and pkt[IP].ttl == x],
+            "ttl": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(IP) and pkt[IP].ttl == int(x)],
             "ver": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(IP) and pkt[IP].version == x],
             "seq": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].seq == int(x)],
             "ack": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].ack == int(x)],
             "urgptr": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(TCP) and pkt[TCP].urgptr == x],
             "icmp_type": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(ICMP) and pkt[ICMP].type == x],
             "icmp_code": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(ICMP) and pkt[ICMP].code == int(x)],
-            "dns_qn": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(DNS) and pkt[DNS].qd.qname == x],
+            "dns_qn": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(DNS) and pkt[DNS].qd and pkt[DNS].qd.qname.decode("utf-8") == x],
             "dns_qr": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(DNS) and pkt[DNS].qr == x],
             "http_mthd": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(HTTP) and pkt[HTTP].Method == x],
             "http_host": lambda x: [pkt for pkt in self.filtered_packets if pkt.haslayer(HTTP) and pkt[HTTP].Host == x],
@@ -75,7 +73,7 @@ class ScapyClass:
             self.packet_list = rdpcap(path)
             self.filtered_packets = self.packet_list
             # for packet in self.packet_list:
-            # print(packet.summary())
+            print("Packet loaded")
             return True
         except FileNotFoundError as e:
             return False
@@ -109,11 +107,12 @@ class ScapyClass:
     def filter_packets(self, filter_string):
         parts = filter_string.split(" ")
         for part in parts:
-            temp = part.split("=")
+            temp = part.strip().split("=")
             if temp[0] in self.op_dict:
                 try:
                     self.filtered_packets = self.op_dict[temp[0]](temp[1])
-                except:
+                except Exception as e:
+                    # print(f"er:\n{e}")
                     return False
             else:
                 print("filter failed")
@@ -129,8 +128,8 @@ class ScapyClass:
             self.filtered_packets = temp
             print("succeeded sniffing")
             return True
-        except:
-            print("failed sniffing")
+        except Exception as e:
+            print(f"failed sniffing: {e}")
             return False
         # print(f"{temp}")
         # for packet in self.packet_list:

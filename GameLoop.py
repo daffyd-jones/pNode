@@ -134,7 +134,6 @@ class GameLoop:
                 c = -1
             c += 1
             res = self.GUI.input_check()
-            # print(self.Scapy.filtered_packet_list)
             ac_bool = None
             if res != None:
                 if res == Action.BACK:
@@ -158,10 +157,6 @@ class GameLoop:
                 self.step_position += 1
             if self.play != False:
                 self.ch = False
-                print(f"[// step_pos: {self.step_position} ")
-
-                # self.play = False
-                # self.GUI.step_through(self.step_position, self.step_range, self.Scapy.get_filtered_packets())
             if self.ch:
                 print("gonna change")
                 self.GUI.set_packets(self.Scapy.get_filtered_packets())
@@ -188,7 +183,9 @@ class GameLoop:
                     if lres:
                         break
                 elif res[0] == "dsniff":
-                    break
+                    if res[1]:
+                        break
+                    lres = True
             self.GUI.load_screen(lres)
 
 
