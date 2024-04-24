@@ -13,10 +13,10 @@ Filter hosts by packet amount
 
 Packets can be filtered by the following parameters:
 filt_parameters = 
-"eth:       x == src || dst MAC",
-"src_eth:   x == src MAC",
-"dst_eth:   x == dst MAC",
-"ip:        x == src || dst IP",
+- "eth:       x == src || dst MAC",
+- "src_eth:   x == src MAC",
+- "dst_eth:   x == dst MAC",
+- "ip:        x == src || dst IP",
 "src_ip:    x == src IP",
 "dst_ip:    x == dst IP",
 "len:       x == IP length",
