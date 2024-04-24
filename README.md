@@ -6,14 +6,13 @@ the host or connection.
 
 ![image 2](2.png)
 
-V1.0
+# V1.0
 open packets up to ~20MB - even that kinda sucks, but smaller pcaps work quite well!
-Packets can be filtered by fields defined below
-Playthrough functionality allows user to step through pcap chronologically to see traffic
-Filter hosts by packet amount
+- Packets can be filtered by fields defined below
+- Playthrough functionality allows user to step through pcap chronologically to see traffic
+- Filter hosts by packet amount
 
 Packets can be filtered by the following parameters:
-filt_parameters = 
 - "eth:       x == src || dst MAC",
 - "src_eth:   x == src MAC",
 - "dst_eth:   x == dst MAC",
