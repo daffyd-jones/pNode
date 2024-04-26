@@ -41,6 +41,6 @@ Packets can be filtered by the following parameters:
 To be added:
 - Multi-threadding for filtering packets
 - Copy, Paste, Highlight text
- -May alter program to use node map as the main datatype and use that instead of the list,
+- May alter program to use node map as the main datatype and use that instead of the list,
 this will make the process faster as the node map for portrayal will be created from the assembled
 node map rather than remaking the map each time.
