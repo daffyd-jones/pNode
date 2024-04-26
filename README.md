@@ -19,8 +19,8 @@ Packets can be filtered by the following parameters:
 - "ip:        x == src || dst IP",
 - "src_ip:    x == src IP",
 - "dst_ip:    x == dst IP",
- -"len:       x == IP length",
- -"ttl:       x == IP time to live",
+- "len:       x == IP length",
+- "ttl:       x == IP time to live",
 - "ver:       x == IP version",
 - "port:      x == src || dst TCP || UDP",
 - "sport:     x == src TCP || UDP",
@@ -39,8 +39,8 @@ Packets can be filtered by the following parameters:
 - "prot:      x == protocol",
 
 To be added:
-Multi-threadding for filtering packets
-Copy, Paste, Highlight text
-May alter program to use node map as the main datatype and use that instead of the list,
-this will make the process faster as the node map for showing will be created from the assembled
+- Multi-threadding for filtering packets
+- Copy, Paste, Highlight text
+ -May alter program to use node map as the main datatype and use that instead of the list,
+this will make the process faster as the node map for portrayal will be created from the assembled
 node map rather than remaking the map each time.
